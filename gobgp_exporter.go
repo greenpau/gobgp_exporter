@@ -98,19 +98,16 @@ type gobgpOpts struct {
 
 // NewExporter returns an initialized Exporter.
 func NewExporter(opts gobgpOpts) (*Exporter, error) {
-	client, err := gobgpapi.NewGobgpApiExtendedClient(opts.address, opts.timeout)
-	if err != nil {
-		return nil, err
+	e := Exporter{
+		address: opts.address,
+		timeout: opts.timeout,
 	}
-
-	// Init our exporter.
-	return &Exporter{
-		client:        client,
-		address:       opts.address,
-		timeout:       opts.timeout,
-		lastConnected: time.Now().Unix(),
-		connected:     true,
-	}, nil
+	client, err := gobgpapi.NewGobgpApiExtendedClient(opts.address, opts.timeout)
+	e.client = client
+	if err != nil {
+		return &e, err
+	}
+	return &e, nil
 }
 
 // Describe describes all the metrics ever exported by the GoBGP exporter. It
@@ -125,7 +122,9 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 // Reconnect closes existing connection to GoBGP, if any. Then, it
 // creates a new one.
 func (e *Exporter) Reconnect() error {
-	e.client.Conn.Close()
+	if e.client.Conn != nil {
+		e.client.Conn.Close()
+	}
 	e.connected = false
 	client, err := gobgpapi.NewGobgpApiExtendedClient(e.address, 1)
 	if err != nil {
@@ -147,32 +146,43 @@ func IsConnectionError(err error) bool {
 // Collect fetches the stats from GoBGP server and delivers them
 // as Prometheus metrics. It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	// What is RouterID and AS number of this GoBGP server?
-	req := new(gobgpapi.GetServerRequest)
-	server, err := e.client.Gobgp.GetServer(context.Background(), req)
-	if err != nil {
-		ch <- prometheus.MustNewConstMetric(
-			up, prometheus.GaugeValue, 0,
-		)
-		log.Errorf("Can't query GoBGP: %v", err)
-		if IsConnectionError(err) {
-			if e.connected {
-				e.lostConnection = time.Now().Unix()
-				e.connected = false
+
+	upValue := 0
+
+	if e.connected {
+		// What is RouterID and AS number of this GoBGP server?
+		req := new(gobgpapi.GetServerRequest)
+		server, err := e.client.Gobgp.GetServer(context.Background(), req)
+		if err != nil {
+			log.Errorf("Can't query GoBGP: %v", err)
+			if IsConnectionError(err) {
+				if e.connected {
+					e.lostConnection = time.Now().Unix()
+					e.connected = false
+				}
+				log.Errorf("Failed to connect to GoBGP: %v", err)
+				if err := e.Reconnect(); err != nil {
+					e.connected = false
+					log.Errorf("Failed to reconnect to GoBGP: %v", err)
+				}
 			}
-			log.Errorf("Failed to connect to GoBGP: %v", err)
-			if err := e.Reconnect(); err != nil {
-				e.connected = false
-				log.Errorf("Failed to reconnect to GoBGP: %v", err)
-			}
+		} else {
+			e.routerID = server.Global.GetRouterId()
+			e.localAS = server.Global.GetAs()
+			upValue = 1
 		}
 	} else {
-		e.routerID = server.Global.GetRouterId()
-		e.localAS = server.Global.GetAs()
-
+		if err := e.Reconnect(); err != nil {
+			log.Errorf("Failed to reconnect to GoBGP: %v", err)
+		}
 	}
 
-	// The timestamp of the last successful connection to the router.
+	ch <- prometheus.MustNewConstMetric(
+		up,
+		prometheus.GaugeValue,
+		float64(upValue),
+	)
+
 	ch <- prometheus.MustNewConstMetric(
 		routerLastConnected,
 		prometheus.CounterValue,
@@ -180,7 +190,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		e.routerID,
 	)
 
-	// The timestamp when the connection to the router was lost.
 	ch <- prometheus.MustNewConstMetric(
 		routerLostConnection,
 		prometheus.CounterValue,
@@ -192,12 +201,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	// The router responded
-	ch <- prometheus.MustNewConstMetric(
-		up, prometheus.GaugeValue, 1,
-	)
-
-	// Populate router information. This metric is always 1.
 	ch <- prometheus.MustNewConstMetric(
 		routerAS,
 		prometheus.GaugeValue,
@@ -252,7 +255,11 @@ func main() {
 
 	exporter, err := NewExporter(opts)
 	if err != nil {
-		log.Fatalln(err)
+		log.Errorf("gobgp_exporter failed to init properly: %s", err)
+		exporter.connected = false
+	} else {
+		exporter.lastConnected = time.Now().Unix()
+		exporter.connected = true
 	}
 	prometheus.MustRegister(exporter)
 
