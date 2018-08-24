@@ -73,36 +73,75 @@ var (
 	)
 	routerPeer = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "peer_up"),
-		"Is GoBGP up and in established state (1) or it is not (0).",
+		"Is the peer up and in established state (1) or it is not (0).",
 		[]string{"router_id", "peer_router_id"}, nil,
 	)
-	/*
-		bgpPeer = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "peer_state"),
-			"What is BGP peer state: Established, Idle, etc.",
-			[]string{"router_id"}, nil,
-		)
-		bgpPeerUptime = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "peer_uptime"),
-			"How long BGP peer is up.",
-			[]string{"router_id"}, nil,
-		)
-		bgpPeerReceivedRoutes = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "peer_received_routes"),
-			"How many routes did the BGP peer sent.",
-			[]string{"router_id", "address_family"}, nil,
-		)
-		bgpPeerAcceptedRoutes = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "peer_accepted_routes"),
-			"How many routes were accepted from the BGP peer.",
-			[]string{"router_id", "address_family"}, nil,
-		)
-		bgpRoutesTotal = prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "routes_total"),
-			"How many routes are in BGP address family.",
-			[]string{"address_family"}, nil,
-		)
-	*/
+	routerPeerAsn = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_asn"),
+		"What is the AS number of the peer",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	routerPeerLocalAsn = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_local_asn"),
+		"What is the AS number presented to the peer by this router.",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	routerPeerAdminState = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_admin_state"),
+		"Is the peer configured for being Up (0), Down (1), or PFX_CT (2)",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	routerPeerSessionState = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_session_state"),
+		"What is the state of BGP session to the peer: idle (0), connect (1), active (2), opensent (3), openconfirm (4), established (5)",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerReceivedRoutes = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_received_route_count"),
+		"How many routes did the BGP peer sent to this router (limited to IPv4).",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerAcceptedRoutes = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_accepted_route_count"),
+		"How many routes were accepted from the routes received from this BGP peer (limited to IPv4)",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerAdvertisedRoutes = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_advertised_route_count"),
+		"How many routes were advertised to this BGP peer (limited to IPv4).",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerOutQueue = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_out_queue_count"),
+		"PeerState.OutQ",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerFlops = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_flop_count"),
+		"PeerState.Flops",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerSendCommunityFlag = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_send_community"),
+		"PeerState.SendCommunity",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+
+	bgpPeerRemovePrivateAsFlag = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_remove_private_as"),
+		"PeerState.RemovePrivateAs",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerPasswodSetFlag = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_password_set"),
+		"Whether the GoBGP peer has been configured (1) for authentication or not (0)",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
+	bgpPeerType = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "peer_type"),
+		"PeerState.PeerType",
+		[]string{"router_id", "peer_router_id"}, nil,
+	)
 )
 
 // Exporter collects GoBGP data from the given server and exports them using
@@ -159,6 +198,19 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- routerNextPoll
 	ch <- routerPeers
 	ch <- routerPeer
+	ch <- routerPeerAsn
+	ch <- routerPeerLocalAsn
+	ch <- routerPeerAdminState
+	ch <- routerPeerSessionState
+	ch <- bgpPeerReceivedRoutes
+	ch <- bgpPeerAcceptedRoutes
+	ch <- bgpPeerAdvertisedRoutes
+	ch <- bgpPeerOutQueue
+	ch <- bgpPeerFlops
+	ch <- bgpPeerSendCommunityFlag
+	ch <- bgpPeerRemovePrivateAsFlag
+	ch <- bgpPeerPasswodSetFlag
+	ch <- bgpPeerType
 }
 
 // Reconnect closes existing connection to GoBGP, if any. Then, it
@@ -343,22 +395,155 @@ func (e *Exporter) GatherMetrics() {
 		}
 	}
 
-	/*
-		if e.connected {
-			peerRequest := new(gobgpapi.GetNeighborRequest)
-			peerRequest.EnableAdvertised = false
-			peerRequest.Address = ""
-			peerResponse, err := e.client.Gobgp.GetNeighbor(context.Background(), peerRequest)
-			if err != nil {
-				log.Errorf("GoBGP query for peers failed: %s", err)
-				e.IncrementErrorCounter()
-			} else {
-				for _, p := range peerResponse.Peers {
-					spew.Dump(p)
+	if e.connected {
+		peerRequest := new(gobgpapi.GetNeighborRequest)
+		peerRequest.EnableAdvertised = false
+		peerRequest.Address = ""
+		peerResponse, err := e.client.Gobgp.GetNeighbor(context.Background(), peerRequest)
+		if err != nil {
+			log.Errorf("GoBGP query for peers failed: %s", err)
+			e.IncrementErrorCounter()
+		} else {
+			e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+				routerPeers,
+				prometheus.GaugeValue,
+				float64(len(peerResponse.Peers)),
+				e.routerID,
+			))
+			for _, p := range peerResponse.Peers {
+				peerRouterID := p.Info.NeighborAddress
+				// Peer Up/Down
+				if strings.HasSuffix(p.Info.BgpState, "stablished") {
+					e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+						routerPeer,
+						prometheus.GaugeValue,
+						1,
+						e.routerID,
+						peerRouterID,
+					))
+				} else {
+					e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+						routerPeer,
+						prometheus.GaugeValue,
+						0,
+						e.routerID,
+						peerRouterID,
+					))
 				}
+				// Peer ASN
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					routerPeerAsn,
+					prometheus.GaugeValue,
+					float64(p.Info.PeerAs),
+					e.routerID,
+					peerRouterID,
+				))
+				// Peer Admin State: Up (0), Down (1), PFX_CT (2)
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					routerPeerAdminState,
+					prometheus.GaugeValue,
+					float64(p.Info.AdminState),
+					e.routerID,
+					peerRouterID,
+				))
+				// Peer Session State: idle (0), connect (1), active (2), opensent (3)
+				// openconfirm (4), established (5).
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					routerPeerSessionState,
+					prometheus.GaugeValue,
+					float64(p.Info.SessionState),
+					e.routerID,
+					peerRouterID,
+				))
+				// Local AS advertised to the peer
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					routerPeerLocalAsn,
+					prometheus.GaugeValue,
+					float64(p.Info.LocalAs),
+					e.routerID,
+					peerRouterID,
+				))
+				// The number of received routes from the peer
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerReceivedRoutes,
+					prometheus.GaugeValue,
+					float64(p.Info.Received),
+					e.routerID,
+					peerRouterID,
+				))
+				// The number of accepted routes from the peer
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerAcceptedRoutes,
+					prometheus.GaugeValue,
+					float64(p.Info.Accepted),
+					e.routerID,
+					peerRouterID,
+				))
+				// The number of advertised routes to the peer
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerAdvertisedRoutes,
+					prometheus.GaugeValue,
+					float64(p.Info.Advertised),
+					e.routerID,
+					peerRouterID,
+				))
+				// TODO: PeerState.OutQ
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerOutQueue,
+					prometheus.GaugeValue,
+					float64(p.Info.OutQ),
+					e.routerID,
+					peerRouterID,
+				))
+				// TODO: PeerState.Flops
+				// TODO: Is it a gauge or counter?
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerFlops,
+					prometheus.GaugeValue,
+					float64(p.Info.Flops),
+					e.routerID,
+					peerRouterID,
+				))
+				// TODO: PeerState.SendCommunity
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerSendCommunityFlag,
+					prometheus.GaugeValue,
+					float64(p.Info.SendCommunity),
+					e.routerID,
+					peerRouterID,
+				))
+				// TODO: PeerState.RemovePrivateAs
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerRemovePrivateAsFlag,
+					prometheus.GaugeValue,
+					float64(p.Info.RemovePrivateAs),
+					e.routerID,
+					peerRouterID,
+				))
+				// TODO: PeerState.AuthPassword
+				passwordSetFlag := 0
+				if p.Info.AuthPassword != "" {
+					passwordSetFlag = 1
+				}
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerPasswodSetFlag,
+					prometheus.GaugeValue,
+					float64(passwordSetFlag),
+					e.routerID,
+					peerRouterID,
+				))
+				// TODO: PeerState.PeerType
+				e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+					bgpPeerType,
+					prometheus.GaugeValue,
+					float64(p.Info.PeerType),
+					e.routerID,
+					peerRouterID,
+				))
+
 			}
 		}
-	*/
+	}
 
 	e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
 		routerQueryErrors,
