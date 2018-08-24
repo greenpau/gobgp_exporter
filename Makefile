@@ -10,7 +10,7 @@ VERBOSE:=-v
 all:
 	@echo "Version: $(APP_VERSION), Branch: $(GIT_BRANCH), Revision: $(GIT_COMMIT)"
 	@echo "Build on $(BUILD_DATE) by $(BUILD_USER)"
-	@cat gobgp.pb.extended.patch > $(GOPATH)/src/github.com/osrg/gobgp/api/gobgp.pb.extended.go
+	@cat assets/gobgp.pb.extended.patch.go > $(GOPATH)/src/github.com/osrg/gobgp/api/gobgp.pb.extended.go
 	@CGO_ENABLED=0 go build -o ./$(BINARY) $(VERBOSE) \
 		-ldflags="-w -s \
 		-X github.com/prometheus/common/version.Version=$(APP_VERSION) \
