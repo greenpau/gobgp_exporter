@@ -93,7 +93,7 @@ var (
 	)
 	routerPeerSessionState = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "peer_session_state"),
-		"What is the state of BGP session to the peer: idle (0), connect (1), active (2), opensent (3), openconfirm (4), established (5)",
+		"What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6)",
 		[]string{"router_id", "peer_router_id"}, nil,
 	)
 	bgpPeerReceivedRoutes = prometheus.NewDesc(
@@ -126,7 +126,6 @@ var (
 		"PeerState.SendCommunity",
 		[]string{"router_id", "peer_router_id"}, nil,
 	)
-
 	bgpPeerRemovePrivateAsFlag = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "peer_remove_private_as"),
 		"PeerState.RemovePrivateAs",

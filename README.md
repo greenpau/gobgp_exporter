@@ -30,16 +30,16 @@ make qtest
 | `gobgp_peer_up` | Is GoBGP peer up or down (0). | `router_id`, `peer_router_id` |
 | `gobgp_peer_asn` | What is AS number for a peer. | `router_id`, `peer_router_id` |
 | `gobgp_peer_admin_state` | Is the peer configured for being Up (0), Down (1), or PFX_CT (2) | `router_id`, `peer_router_id` |
-| `gobgp_peer_session_state` | **TODO** What is the state of BGP session to the peer: idle (0), connect (1), active (2), opensent (3), openconfirm (4), established (5) | `router_id`, `peer_router_id` |
-| `gobgp_peer_received_route_count` | **TODO** How many routes did the BGP peer sent to this router (limited to IPv4). | `router_id`, `peer_router_id` |
-| `gobgp_peer_accepted_route_count` | **TODO** How many routes were accepted from the routes received from this BGP peer (limited to IPv4). | `router_id`, `peer_router_id` |
-| `gobgp_peer_advertised_route_count` | **TODO** How many routes were advertised to this BGP peer (limited to IPv4). | `router_id`, `peer_router_id` |
-| `gobgp_peer_out_queue_count` | **TODO** `PeerState.OutQ` | `router_id`, `peer_router_id` |
-| `gobgp_peer_flop_count` | **TODO** `PeerState.Flops` | `router_id`, `peer_router_id` |
-| `gobgp_peer_send_community` | **TODO** `PeerState.SendCommunity` | `router_id`, `peer_router_id` |
-| `gobgp_peer_remove_private_as` | **TODO** `PeerState.RemovePrivateAs` | `router_id`, `peer_router_id` |
+| `gobgp_peer_session_state` | What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `router_id`, `peer_router_id` |
+| `gobgp_peer_received_route_count` | How many routes did the BGP peer sent to this router (limited to IPv4). | `router_id`, `peer_router_id` |
+| `gobgp_peer_accepted_route_count` | How many routes were accepted from the routes received from this BGP peer (limited to IPv4). | `router_id`, `peer_router_id` |
+| `gobgp_peer_advertised_route_count` | How many routes were advertised to this BGP peer (limited to IPv4). | `router_id`, `peer_router_id` |
+| `gobgp_peer_out_queue_count` | `PeerState.OutQ` | `router_id`, `peer_router_id` |
+| `gobgp_peer_flop_count` | `PeerState.Flops` | `router_id`, `peer_router_id` |
+| `gobgp_peer_send_community` | `PeerState.SendCommunity` | `router_id`, `peer_router_id` |
+| `gobgp_peer_remove_private_as` | `PeerState.RemovePrivateAs`: None (0), All (1), Replace (2) | `router_id`, `peer_router_id` |
 | `gobgp_peer_password_set` | **TODO** `PeerState.AuthPassword` | `router_id`, `peer_router_id` |
-| `gobgp_peer_type` | **TODO** `PeerState.PeerType` | `router_id`, `peer_router_id` |
+| `gobgp_peer_type` | `PeerState.PeerType`: internal (0), external (1) | `router_id`, `peer_router_id` |
 
 For example:
 
