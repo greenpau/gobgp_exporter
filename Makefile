@@ -1,23 +1,25 @@
-.PHONY: test clean qtest
+.PHONY: test clean qtest gobgp-down gobgp
 APP_VERSION:=1.0.0
 GIT_COMMIT:=$(shell git describe --dirty --always)
 GIT_BRANCH:=$(shell git rev-parse --abbrev-ref HEAD -- | head -1)
 BUILD_USER:=$(shell whoami)
 BUILD_DATE:=$(shell date +"%Y-%m-%d")
-BINARY:=gobgp_exporter
+BINARY:=gobgp-exporter
 VERBOSE:=-v
 
 all:
 	@echo "Version: $(APP_VERSION), Branch: $(GIT_BRANCH), Revision: $(GIT_COMMIT)"
 	@echo "Build on $(BUILD_DATE) by $(BUILD_USER)"
 	@cat assets/gobgp.pb.extended.patch.go > $(GOPATH)/src/github.com/osrg/gobgp/api/gobgp.pb.extended.go
-	@CGO_ENABLED=0 go build -o ./$(BINARY) $(VERBOSE) \
+	@mkdir -p bin
+	@CGO_ENABLED=0 go build -o ./bin/$(BINARY) $(VERBOSE) \
 		-ldflags="-w -s \
 		-X github.com/prometheus/common/version.Version=$(APP_VERSION) \
 		-X github.com/prometheus/common/version.Revision=$(GIT_COMMIT) \
 		-X github.com/prometheus/common/version.Branch=$(GIT_BRANCH) \
 		-X github.com/prometheus/common/version.BuildUser=$(BUILD_USER) \
 		-X github.com/prometheus/common/version.BuildDate=$(BUILD_DATE) \
+		-X main.appName=$(BINARY) \
 		-X main.appVersion=$(APP_VERSION) \
 		-X main.gitBranch=$(GIT_BRANCH) \
 		-X main.gitCommit=$(GIT_COMMIT) \

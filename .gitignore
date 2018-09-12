@@ -1,5 +1,5 @@
 /.build
 /.release
 /.tarballs
-/gobgp_exporter
+/bin
 *.tar.gz

@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	appName    = "gobgp-exporter"
 	appVersion = "[untracked]"
 	gitBranch  string
 	gitCommit  string
@@ -568,8 +569,7 @@ func main() {
 	var listenAddress, metricsPath, gobgpAddress string
 	var gobgpTimeout, gobgpPollInterval int
 	var isShowVersion bool
-	appName := "gobgp_exporter"
-	flag.StringVar(&listenAddress, "web.listen-address", ":9472", "Address to listen on for web interface and telemetry.")
+	flag.StringVar(&listenAddress, "web.listen-address", ":9474", "Address to listen on for web interface and telemetry.")
 	flag.StringVar(&metricsPath, "web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	opts := gobgpOpts{}
 	flag.StringVar(&gobgpAddress, "gobgp.address", "127.0.0.1:50051", "gRPC API address of GoBGP server.")
