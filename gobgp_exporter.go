@@ -580,7 +580,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n%s - Prometheus Exporter for GoBGP\n\n", appName)
 		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", appName)
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\nDocumentation: https://github.com/greenpau/%s/\n\n", appName)
+		fmt.Fprintf(os.Stderr, "\nDocumentation: https://github.com/ovnworks/%s/\n\n", appName)
 	}
 	flag.Usage = usageHelp
 	flag.Parse()
