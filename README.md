@@ -6,9 +6,9 @@ To run it:
 
 ```bash
 cd $GOPATH/src
-mkdir -p github.com/greenpau
-cd github.com/greenpau
-git clone https://github.com/greenpau/gobgp_exporter.git
+mkdir -p github.com/ovnworks
+cd github.com/ovnworks
+git clone https://github.com/ovnworks/gobgp_exporter.git
 cd gobgp_exporter
 make
 make qtest
