@@ -26,14 +26,6 @@
 
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/greenpau/go-ansible-db"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/greenpau/go-cisco-nx-api"
-
-[[constraint]]
   name = "github.com/osrg/gobgp"
   version = "1.33"
 

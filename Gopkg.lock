@@ -83,22 +83,6 @@
   revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
 
 [[projects]]
-  branch = "master"
-  digest = "1:5f236bfb2eb04a625b0ecd70b14b7da8ba0b2851d206b699ea78d14d333397ae"
-  name = "github.com/greenpau/go-ansible-db"
-  packages = ["pkg/db"]
-  pruneopts = "UT"
-  revision = "44b0dcac2c7a527ae7e61e025133fa3e68e70bbd"
-
-[[projects]]
-  branch = "master"
-  digest = "1:65aa535f2ba9eb02fcc3414255555747e89b086a0f199404d0644d9376697f76"
-  name = "github.com/greenpau/go-cisco-nx-api"
-  packages = ["pkg/client"]
-  pruneopts = "UT"
-  revision = "41ff27c0a947a31fd050bc9f9927fe2a9c6d7dfb"
-
-[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -325,12 +309,9 @@
 
 [[projects]]
   branch = "release-branch.go1.11"
-  digest = "1:cb77e5934866333fa0784326a57e64c4da128001c94fbd1d29819d79bd3b1087"
+  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
-  packages = [
-    "pbkdf2",
-    "ssh/terminal",
-  ]
+  packages = ["ssh/terminal"]
   pruneopts = "UT"
   revision = "56440b844dfe139a8ac053f4ecac0b20b79058f4"
 
@@ -462,8 +443,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/greenpau/go-ansible-db/pkg/db",
-    "github.com/greenpau/go-cisco-nx-api/pkg/client",
     "github.com/osrg/gobgp/api",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
