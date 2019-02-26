@@ -1,4 +1,4 @@
-.PHONY: test clean qtest deploy dist linter dep gobgp-down gobgp
+.PHONY: test clean qtest deploy dist linter dep gobgp-down gobgp tag
 APP_VERSION:=$(shell cat VERSION | head -1)
 GIT_COMMIT:=$(shell git describe --dirty --always)
 GIT_BRANCH:=$(shell git rev-parse --abbrev-ref HEAD -- | head -1)
@@ -94,3 +94,7 @@ gobgp:
 
 gobgp-down:
 	@sudo systemctl stop gobgpd
+
+tag:
+	@git tag -s "v$(APP_VERSION)" -m "v$(APP_VERSION)"
+	@git push --tags
