@@ -5,22 +5,22 @@ set -x
 MYAPP=gobgp-exporter
 MYAPP_USER=gobgp_exporter
 MYAPP_GROUP=gobgp_exporter
-MYAPP_SERVICE=gobgp-exporter
-MYAPP_BIN=/usr/bin/gobgp-exporter
+MYAPP_SERVICE=${MYAPP}
+MYAPP_BIN=/usr/bin/${MYAPP}
 MYAPP_DESCRIPTION="Prometheus Exporter for GoBGP"
 MYAPP_CONF="/etc/sysconfig/${MYAPP_SERVICE}"
 
 if getent group ${MYAPP_GROUP}  >/dev/null; then
   printf "INFO: ${MYAPP_GROUP} group already exists\n"
 else
-  printf "INFO: ${MYAPP_GROUP} group does not exist, creating ..."
+  printf "INFO: ${MYAPP_GROUP} group does not exist, creating ...\n"
   groupadd --system ${MYAPP_GROUP}
 fi
 
 if getent passwd ${MYAPP_USER} >/dev/null; then
   printf "INFO: ${MYAPP_USER} user already exists\n"
 else
-  printf "INFO: ${MYAPP_USER} group does not exist, creating ..."
+  printf "INFO: ${MYAPP_USER} group does not exist, creating ...\n"
   useradd --system -d /var/lib/${MYAPP} -s /bin/bash -g ${MYAPP_GROUP} ${MYAPP_USER}
 fi
 
