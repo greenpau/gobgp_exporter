@@ -16,57 +16,135 @@ make qtest
 
 ## Exported Metrics
 
-| Metric | Meaning | Labels |
+| **Metric** | **Description** | **Labels** |
 | ------ | ------- | ------ |
-| `gobgp_up` | Is GoBGP up and responds to queries (1) or is it down (0). | |
-| `gobgp_asn` | What is GoBGP router ID and AS number. | `router_id` |
-| `gobgp_connected_at` | When was the last successful connection to GoBGP. | `router_id` |
-| `gobgp_lost_connection_at` | When did the exporter lose connection to GoBGP router. | `router_id` |
-| `gobgp_failed_query_count` | The number of failed queries to GoBGP router. | `router_id` |
-| `gobgp_next_poll` | The timestamp of the next potential poll of GoBGP server. | `router_id` |
-| `gobgp_route_count` | The number of routes on per address family and resource type basis. | `router_id`, `address_family`, `resource_type` |
-| `gobgp_peer_count` | The number of BGP peers | `router_id` |
-| `gobgp_peer_name` | **TODO** The name associated with a remote peer. The names must provided to the exporter in the form of YAML file. | `router_id` |
-| `gobgp_peer_up` | Is GoBGP peer up or down (0). | `router_id`, `peer_router_id` |
-| `gobgp_peer_asn` | What is AS number for a peer. | `router_id`, `peer_router_id` |
-| `gobgp_peer_admin_state` | Is the peer configured for being Up (0), Down (1), or PFX_CT (2) | `router_id`, `peer_router_id` |
-| `gobgp_peer_session_state` | What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `router_id`, `peer_router_id` |
-| `gobgp_peer_received_route_count` | How many routes did the BGP peer sent to this router (limited to IPv4). | `router_id`, `peer_router_id` |
-| `gobgp_peer_accepted_route_count` | How many routes were accepted from the routes received from this BGP peer (limited to IPv4). | `router_id`, `peer_router_id` |
-| `gobgp_peer_advertised_route_count` | How many routes were advertised to this BGP peer (limited to IPv4). | `router_id`, `peer_router_id` |
-| `gobgp_peer_out_queue_count` | `PeerState.OutQ` | `router_id`, `peer_router_id` |
-| `gobgp_peer_flop_count` | `PeerState.Flops` | `router_id`, `peer_router_id` |
-| `gobgp_peer_send_community` | `PeerState.SendCommunity` | `router_id`, `peer_router_id` |
-| `gobgp_peer_remove_private_as` | `PeerState.RemovePrivateAs`: None (0), All (1), Replace (2) | `router_id`, `peer_router_id` |
-| `gobgp_peer_password_set` | **TODO** `PeerState.AuthPassword` | `router_id`, `peer_router_id` |
-| `gobgp_peer_type` | `PeerState.PeerType`: internal (0), external (1) | `router_id`, `peer_router_id` |
+`gobgp_router_up` | Is GoBGP up and responds to queries (1) or is it down (0). | |
+`gobgp_router_id` | What is GoBGP router ID. | |
+`gobgp_router_asn` | What is GoBGP AS number. | |
+`gobgp_router_failed_req_count` | The number of failed requests to GoBGP router. | |
+`gobgp_router_next_poll` | The timestamp of the next potential scrape of the router. | |
+`gobgp_router_scrape_time` | The amount of time it took to scrape the router. | |
+`gobgp_route_count_total` | The number of routes on per address family and resource type basis | `address_family`, `resource_type` |
+`gobgp_peer_count` | The number of BGP peers | |
+`gobgp_peer_up` | Is the peer up and in established state (1) or it is not (0). | `name` |
+`gobgp_peer_asn` | What is the AS number of the peer | `name` |
+`gobgp_peer_local_asn` | What is the AS number presented to the peer by this router. | `name` |
+`gobgp_peer_admin_state` | Is the peer configured for being Up (0), Down (1), or PFX_CT (2) | `name` |
+ "What is the state of BGP session to the peer
+`gobgp_peer_session_state` | unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `name` |
+`gobgp_peer_received_route_count` | How many routes did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_accepted_route_count` | How many routes were accepted from the routes received from this BGP peer (limited to IPv4) | `name` |
+`gobgp_peer_advertised_route_count` | How many routes were advertised to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_out_queue_count` | PeerState.OutQ | `name` |
+`gobgp_peer_flop_count` | PeerState.Flops | `name` |
+`gobgp_peer_send_community` | PeerState.SendCommunity | `name` |
+`gobgp_peer_remove_private_as` | PeerState.RemovePrivateAs | `name` |
+`gobgp_peer_password_set` | Whether the GoBGP peer has been configured (1) for authentication or not (0) | `name` |
+`gobgp_peer_type` | PeerState.PeerType | `name` |
 
 For example:
 
 ```
-gobgp_asn{router_id="192.168.56.3"} 65001
-gobgp_connected_at{router_id="192.168.56.3"} 1.534704149e+09
-gobgp_exporter_build_info{branch="master",goversion="go1.10.2",revision="687ae72-dirty",version="1.0.0"} 1
-gobgp_lost_connection_at{router_id="192.168.56.3"} 0
-gobgp_failed_query_count{router_id="192.168.56.3"} 2
-gobgp_route_count{address_family="evpn",resource_type="global",router_id="192.168.56.3"} 4
-gobgp_route_count{address_family="evpn",resource_type="local",router_id="192.168.56.3"} 4
-gobgp_route_count{address_family="ipv4",resource_type="global",router_id="192.168.56.3"} 1
-gobgp_route_count{address_family="ipv4",resource_type="local",router_id="192.168.56.3"} 1
-gobgp_peer_count{router_id="192.168.56.2"} 2
-gobgp_peer_up{peer_router_id="192.168.56.4",router_id="192.168.56.3"} 1
-gobgp_peer_up{peer_router_id="192.168.56.5",router_id="192.168.56.3"} 1
-gobgp_peer_asn{peer_router_id="192.168.56.4",router_id="192.168.56.3"} 65001
-gobgp_peer_asn{peer_router_id="192.168.56.5",router_id="192.168.56.3"} 65001
-gobgp_peer_admin_state{peer_router_id="192.168.56.4",router_id="192.168.56.3"} 0
-gobgp_peer_admin_state{peer_router_id="192.168.56.5",router_id="192.168.56.3"} 0
-gobgp_up 1
+# HELP gobgp_peer_accepted_route_count How many routes were accepted from the routes received from this BGP peer (limited to IPv4)
+# TYPE gobgp_peer_accepted_route_count gauge
+gobgp_peer_accepted_route_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_admin_state Is the peer configured for being Up (0), Down (1), or PFX_CT (2)
+# TYPE gobgp_peer_admin_state gauge
+gobgp_peer_admin_state{name="10.0.2.100"} 0
+# HELP gobgp_peer_advertised_route_count How many routes were advertised to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_advertised_route_count gauge
+gobgp_peer_advertised_route_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_asn What is the AS number of the peer
+# TYPE gobgp_peer_asn gauge
+gobgp_peer_asn{name="10.0.2.100"} 65001
+# HELP gobgp_peer_count The number of BGP peers
+# TYPE gobgp_peer_count gauge
+gobgp_peer_count 1
+# HELP gobgp_peer_flop_count PeerState.Flops
+# TYPE gobgp_peer_flop_count gauge
+gobgp_peer_flop_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_local_asn What is the AS number presented to the peer by this router.
+# TYPE gobgp_peer_local_asn gauge
+gobgp_peer_local_asn{name="10.0.2.100"} 0
+# HELP gobgp_peer_out_queue_count PeerState.OutQ
+# TYPE gobgp_peer_out_queue_count gauge
+gobgp_peer_out_queue_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_password_set Whether the GoBGP peer has been configured (1) for authentication or not (0)
+# TYPE gobgp_peer_password_set gauge
+gobgp_peer_password_set{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_route_count How many routes did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_route_count gauge
+gobgp_peer_received_route_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_remove_private_as PeerState.RemovePrivateAs
+# TYPE gobgp_peer_remove_private_as gauge
+gobgp_peer_remove_private_as{name="10.0.2.100"} 0
+# HELP gobgp_peer_send_community PeerState.SendCommunity
+# TYPE gobgp_peer_send_community gauge
+gobgp_peer_send_community{name="10.0.2.100"} 0
+# HELP gobgp_peer_session_state What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6)
+# TYPE gobgp_peer_session_state gauge
+gobgp_peer_session_state{name="10.0.2.100"} 0
+# HELP gobgp_peer_type PeerState.PeerType
+# TYPE gobgp_peer_type gauge
+gobgp_peer_type{name="10.0.2.100"} 0
+# HELP gobgp_peer_up Is the peer up and in established state (1) or it is not (0).
+# TYPE gobgp_peer_up gauge
+gobgp_peer_up{name="10.0.2.100"} 0
+# HELP gobgp_route_count_total The number of routes on per address family and resource type basis
+# TYPE gobgp_route_count_total gauge
+gobgp_route_count_total{address_family="evpn",resource_type="global"} 0
+gobgp_route_count_total{address_family="evpn",resource_type="local"} 0
+gobgp_route_count_total{address_family="ipv4",resource_type="global"} 1
+gobgp_route_count_total{address_family="ipv4",resource_type="local"} 1
+# HELP gobgp_router_asn What is GoBGP AS number.
+# TYPE gobgp_router_asn gauge
+gobgp_router_asn 65001
+# HELP gobgp_router_failed_req_count The number of failed requests to GoBGP router.
+# TYPE gobgp_router_failed_req_count counter
+gobgp_router_failed_req_count 0
+# HELP gobgp_router_id What is GoBGP router ID.
+# TYPE gobgp_router_id gauge
+gobgp_router_id 1
+# HELP gobgp_router_next_poll The timestamp of the next potential scrape of the router.
+# TYPE gobgp_router_next_poll counter
+gobgp_router_next_poll 1.551178392e+09
+# HELP gobgp_router_scrape_time The amount of time it took to scrape the router.
+# TYPE gobgp_router_scrape_time gauge
+gobgp_router_scrape_time 0.006621245
+# HELP gobgp_router_up Is GoBGP up and responds to queries (1) or is it down (0).
+# TYPE gobgp_router_up gauge
+gobgp_router_up 1
 ```
 
 ## Flags
 
 ```bash
-./gobgp_exporter --help
+$ bin/gobgp-exporter --help
+
+gobgp-exporter - Prometheus Exporter for GoBGP
+
+Usage: gobgp-exporter [arguments]
+
+  -auth.token string
+        The X-Token for accessing the exporter itself (default "anonymous")
+  -gobgp.address string
+        gRPC API address of GoBGP server. (default "127.0.0.1:50051")
+  -gobgp.poll-interval int
+        The minimum interval (in seconds) between collections from a GoBGP server. (default 15)
+  -gobgp.timeout int
+        Timeout on gRPC requests to a GoBGP server. (default 2)
+  -log.level string
+        logging severity level (default "info")
+  -metrics
+        Display available metrics
+  -version
+        version information
+  -web.listen-address string
+        Address to listen on for web interface and telemetry. (default ":9474")
+  -web.telemetry-path string
+        Path under which to expose metrics. (default "/metrics")
+
+Documentation: https://github.com/ovnworks/gobgp_exporter/
 ```
 
 * __`gobgp.address`:__ Address (host and port) of the GoBGP instance we should
@@ -75,6 +153,7 @@ gobgp_up 1
 * __`gobgp.timeout`:__ Timeout on gRPC requests to GoBGP.
 * __`gobgp.poll-interval`:__ The minimum interval (in seconds) between collections from GoBGP server. (default: 15 seconds)
 * __`gobgp.peers`:__ The file containing the mapping between `router_id` and the name (e.g. `hostname`) of a remote peer.
+* __`auth.token`:__ Enable X-Token authentication for accessing the exporter itself.
 * __`version`:__ Show application version.
 * __`web.listen-address`:__ Address to listen on for web interface and telemetry.
 * __`web.telemetry-path`:__ Path under which to expose metrics.
