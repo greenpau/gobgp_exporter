@@ -181,7 +181,7 @@ func (n *RouterNode) Reconnect() error {
 
 // IsConnectionError checks whether it is connectivity issue.
 func IsConnectionError(err error) bool {
-	if strings.Contains(err.Error(), "connection is") {
+	if strings.Contains(err.Error(), "connection") {
 		return true
 	}
 	return false
