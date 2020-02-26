@@ -20,7 +20,6 @@ import (
 	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
 	"io"
-	"strings"
 )
 
 // GetPeers collects information about BGP peers.
@@ -63,7 +62,7 @@ func (n *RouterNode) GetPeers() {
 		peerRouterID := peerState.GetNeighborAddress()
 
 		// Peer Up/Down
-		if strings.HasSuffix(peerState.GetDescription(), "stablished") {
+		if peerState.GetRouterId() != "" {
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				routerPeer,
 				prometheus.GaugeValue,

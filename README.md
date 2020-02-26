@@ -2,6 +2,9 @@
 
 Export GoBGP data to Prometheus.
 
+![](./assets/docs/images/gobgp_exporter.png)
+
+
 To run it:
 
 ```bash
