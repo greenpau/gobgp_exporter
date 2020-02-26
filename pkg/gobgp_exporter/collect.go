@@ -15,7 +15,6 @@
 package exporter
 
 import (
-	//"github.com/davecgh/go-spew/spew"
 	gobgpapi "github.com/osrg/gobgp/api"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -40,35 +39,20 @@ func (n *RouterNode) GatherMetrics() {
 	}
 	upValue := 1
 
-	if n.connected {
-		// What is RouterID and AS number of this GoBGP server?
-		req := new(gobgpapi.GetServerRequest)
-		server, err := n.client.Gobgp.GetServer(context.Background(), req)
-		if err != nil {
-			n.IncrementErrorCounter()
-			log.Errorf("Can't query GoBGP: %v", err)
-			if IsConnectionError(err) {
-				n.connected = false
-				if err := n.Reconnect(); err != nil {
-					n.IncrementErrorCounter()
-					n.connected = false
-					log.Errorf("Failed to reconnect to GoBGP: %v", err)
-					upValue = 0
-				}
-			}
-		}
-		if n.connected {
-			n.routerID = server.Global.GetRouterId()
-			n.localAS = server.Global.GetAs()
+	// What is RouterID and AS number of this GoBGP server?
+	server, err := n.client.GetBgp(context.Background(), &gobgpapi.GetBgpRequest{})
+	if err != nil {
+		n.IncrementErrorCounter()
+		log.Errorf("Can't query GoBGP: %v", err)
+		if IsConnectionError(err) {
+			n.connected = false
+			upValue = 0
 		}
 	} else {
-		if err := n.Reconnect(); err != nil {
-			n.IncrementErrorCounter()
-			log.Errorf("Failed to reconnect to GoBGP: %v", err)
-			upValue = 0
-		} else {
-			log.Debugf("Router ID: '%s', ASN: %d", n.routerID, n.localAS)
-		}
+		n.routerID = server.Global.RouterId
+		n.localAS = server.Global.As
+		log.Debugf("Router ID: '%s', ASN: %d", n.routerID, n.localAS)
+		n.connected = true
 	}
 
 	if n.connected {

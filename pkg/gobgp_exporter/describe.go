@@ -27,16 +27,31 @@ func (n *RouterNode) Describe(ch chan<- *prometheus.Desc) {
 	ch <- routerErrors
 	ch <- routerNextScrape
 	ch <- routerScrapeTime
-	ch <- routerRibDestinations
+	ch <- routerRibTotalDestinationCount
+	ch <- routerRibTotalPathCount
+	ch <- routerRibAcceptedPathCount
 	ch <- routerPeers
 	ch <- routerPeer
 	ch <- routerPeerAsn
 	ch <- routerPeerLocalAsn
 	ch <- routerPeerAdminState
 	ch <- routerPeerSessionState
-	ch <- bgpPeerReceivedRoutes
-	ch <- bgpPeerAcceptedRoutes
-	ch <- bgpPeerAdvertisedRoutes
+	ch <- bgpPeerReceivedTotalMessagesCount
+	ch <- bgpPeerReceivedNotificationMessagesCount
+	ch <- bgpPeerReceivedUpdateMessagesCount
+	ch <- bgpPeerReceivedOpenMessagesCount
+	ch <- bgpPeerReceivedKeepaliveMessagesCount
+	ch <- bgpPeerReceivedRefreshMessagesCount
+	ch <- bgpPeerReceivedWithdrawUpdateMessagesCount
+	ch <- bgpPeerReceivedWithdrawPrefixMessagesCount
+	ch <- bgpPeerSentTotalMessagesCount
+	ch <- bgpPeerSentNotificationMessagesCount
+	ch <- bgpPeerSentUpdateMessagesCount
+	ch <- bgpPeerSentOpenMessagesCount
+	ch <- bgpPeerSentKeepaliveMessagesCount
+	ch <- bgpPeerSentRefreshMessagesCount
+	ch <- bgpPeerSentWithdrawUpdateMessagesCount
+	ch <- bgpPeerSentWithdrawPrefixMessagesCount
 	ch <- bgpPeerOutQueue
 	ch <- bgpPeerFlops
 	ch <- bgpPeerSendCommunityFlag

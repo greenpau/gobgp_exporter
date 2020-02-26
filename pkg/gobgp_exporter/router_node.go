@@ -20,6 +20,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
 	"net"
 	"strconv"
 	"strings"
@@ -37,7 +38,7 @@ type credential struct {
 // RouterNode is an instance of a GoBGP router.
 type RouterNode struct {
 	sync.RWMutex
-	client               gobgpapi.GobgpApiExtendedClient
+	client               gobgpapi.GobgpApiClient
 	address              string
 	routerID             string
 	localAS              uint32
@@ -75,11 +76,19 @@ func NewRouterNode(addr string, timeout int) (*RouterNode, error) {
 	n.resourceTypes["GLOBAL"] = true
 	n.addressFamilies["IPv4"] = true
 	n.addressFamilies["EVPN"] = true
-	client, err := gobgpapi.NewGobgpApiExtendedClient(addr, timeout)
+
+	grpcOpts := []grpc.DialOption{grpc.WithBlock()}
+	grpcOpts = append(grpcOpts, grpc.WithInsecure())
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(ctx, addr, grpcOpts...)
 	if err != nil {
 		n.IncrementErrorCounter()
+		return n, err
 	}
-	n.client = client
+
+	n.client = gobgpapi.NewGobgpApiClient(conn)
 	return n, nil
 }
 
@@ -152,31 +161,6 @@ func (n *RouterNode) Collect(ch chan<- prometheus.Metric) {
 	for _, m := range n.metrics {
 		ch <- m
 	}
-}
-
-// Reconnect closes existing connection to GoBGP, if any. Then, it
-// creates a new one.
-func (n *RouterNode) Reconnect() error {
-	if n.client.Conn != nil {
-		n.client.Conn.Close()
-	}
-	n.connected = false
-	// TODO: n.address refactoring
-	client, err := gobgpapi.NewGobgpApiExtendedClient(n.address, 1)
-	if err != nil {
-		return err
-	}
-	n.client = client
-	req := new(gobgpapi.GetServerRequest)
-	server, err := n.client.Gobgp.GetServer(context.Background(), req)
-	if err != nil {
-		return err
-	}
-	n.routerID = server.Global.GetRouterId()
-	n.localAS = server.Global.GetAs()
-	n.lastConnected = time.Now().Unix()
-	n.connected = true
-	return nil
 }
 
 // IsConnectionError checks whether it is connectivity issue.

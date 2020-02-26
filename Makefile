@@ -14,9 +14,6 @@ PKG_PORT="9474"
 all:
 	@echo "Version: $(APP_VERSION), Branch: $(GIT_BRANCH), Revision: $(GIT_COMMIT)"
 	@echo "Build on $(BUILD_DATE) by $(BUILD_USER)"
-	@echo "GOPATH: $(GOPATH)"
-	@touch $(GOPATH)/src/github.com/osrg/gobgp/api/gobgp.pb.extended.go
-	@cat assets/gobgp/gobgp.pb.extended.patch.go > $(GOPATH)/src/github.com/osrg/gobgp/api/gobgp.pb.extended.go
 	@mkdir -p bin/
 	@rm -rf ./bin/*
 	@CGO_ENABLED=0 go build -o ./bin/$(BINARY) $(VERBOSE) \

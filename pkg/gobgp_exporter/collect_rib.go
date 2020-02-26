@@ -22,52 +22,135 @@ import (
 	"strings"
 )
 
+var addressFamilies = map[string]*gobgpapi.Family{
+	"ipv4": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP,
+		Safi: gobgpapi.Family_SAFI_UNICAST,
+	},
+	"ipv6": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP6,
+		Safi: gobgpapi.Family_SAFI_UNICAST,
+	},
+	"ipv4_vpn": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP,
+		Safi: gobgpapi.Family_SAFI_MPLS_VPN,
+	},
+	"ipv6_vpn": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP6,
+		Safi: gobgpapi.Family_SAFI_MPLS_VPN,
+	},
+	"ipv4_mpls": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP,
+		Safi: gobgpapi.Family_SAFI_MPLS_LABEL,
+	},
+	"ipv6_mpls": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP6,
+		Safi: gobgpapi.Family_SAFI_MPLS_LABEL,
+	},
+	"evpn": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_L2VPN,
+		Safi: gobgpapi.Family_SAFI_EVPN,
+	},
+	"ipv4_encap": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP,
+		Safi: gobgpapi.Family_SAFI_ENCAPSULATION,
+	},
+	"ipv6_encap": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP6,
+		Safi: gobgpapi.Family_SAFI_ENCAPSULATION,
+	},
+	"ipv4_flowspec": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP,
+		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_UNICAST,
+	},
+	"ipv6_flowspec": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP6,
+		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_UNICAST,
+	},
+	"ipv4_vpn_flowspec": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP,
+		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_VPN,
+	},
+	"ipv6_vpn_flowspec": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_IP6,
+		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_VPN,
+	},
+	"l2_vpn_flowspec": &gobgpapi.Family{
+		Afi:  gobgpapi.Family_AFI_L2VPN,
+		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_VPN,
+	},
+}
+
 // GetRibCounters collects BGP routing information base (RIB) related metrics.
 func (n *RouterNode) GetRibCounters() {
-	if n.connected == false {
-		return
-	}
-	for _, resourceTypeName := range gobgpapi.Resource_name {
-		for _, addressFamilyName := range gobgpapi.Family_name {
-			if !n.connected {
-				continue
-			}
-			if _, exists := n.resourceTypes[resourceTypeName]; !exists {
-				continue
-			}
-			if _, exists := n.addressFamilies[addressFamilyName]; !exists {
-				continue
-			}
-			var resourceType gobgpapi.Resource
-			switch resourceTypeName {
-			case "GLOBAL":
-				resourceType = gobgpapi.Resource_GLOBAL
-			case "LOCAL":
-				resourceType = gobgpapi.Resource_LOCAL
-			default:
-				continue
-			}
-			ribRequest := new(gobgpapi.GetRibRequest)
-			ribRequest.Table = &gobgpapi.Table{
-				Type:   resourceType,
-				Family: uint32(gobgpapi.Family_value[addressFamilyName]),
-			}
-			rib, err := n.client.Gobgp.GetRib(context.Background(), ribRequest)
+	var tableType gobgpapi.TableType
+	for tableTypeName := range gobgpapi.TableType_value {
+		switch tableTypeName {
+		case "GLOBAL":
+			tableType = gobgpapi.TableType_GLOBAL
+		case "LOCAL":
+			tableType = gobgpapi.TableType_LOCAL
+		case "ADJ_IN":
+			// tableType = gobgpapi.TableType_ADJ_IN
+			continue
+		case "ADJ_OUT":
+			// tableType = gobgpapi.TableType_ADJ_OUT
+			continue
+		case "VRF":
+			//tableType = gobgpapi.TableType_VRF
+			continue
+		default:
+			log.Warnf("Unsupported GoBGP route table type: %s", tableTypeName)
+			continue
+		}
+
+		for addressFamilyName, addressFamily := range addressFamilies {
+			serverResponse, err := n.client.GetTable(context.Background(), &gobgpapi.GetTableRequest{
+				TableType: tableType,
+				Family:    addressFamily,
+				Name:      "",
+			})
+
 			if err != nil {
-				log.Errorf("GoBGP query failed for resource type %s for %s address family: %s", resourceTypeName, addressFamilyName, err)
+				log.Errorf("GoBGP query for route table %s/%s failed: %s", tableTypeName, addressFamilyName, err)
 				n.IncrementErrorCounter()
 				continue
 			}
-			log.Debugf("GoBGP RIB size for %s/%s: %d", resourceTypeName, addressFamilyName, len(rib.Table.Destinations))
-			//spew.Dump(len(rib.Destinations))
+
+			if serverResponse == nil {
+				log.Warnf("GoBGP route table %s/%s response is empty", tableTypeName, addressFamilyName)
+				continue
+			}
+
+			log.Debugf("GoBGP route table %s/%s: %v", tableTypeName, addressFamilyName, serverResponse)
+
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
-				routerRibDestinations,
+				routerRibTotalDestinationCount,
 				prometheus.GaugeValue,
-				float64(len(rib.Table.Destinations)),
-				strings.ToLower(resourceTypeName),
+				float64(serverResponse.GetNumDestination()),
+				strings.ToLower(tableTypeName),
 				strings.ToLower(addressFamilyName),
 			))
+
+			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
+				routerRibTotalPathCount,
+				prometheus.GaugeValue,
+				float64(serverResponse.GetNumPath()),
+				strings.ToLower(tableTypeName),
+				strings.ToLower(addressFamilyName),
+			))
+
+			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
+				routerRibAcceptedPathCount,
+				prometheus.GaugeValue,
+				float64(serverResponse.GetNumAccepted()),
+				strings.ToLower(tableTypeName),
+				strings.ToLower(addressFamilyName),
+			))
+
 		}
+
 	}
+
 	return
 }

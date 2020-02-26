@@ -44,21 +44,93 @@ var (
 		"What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6)",
 		[]string{"name"}, nil,
 	)
-	bgpPeerReceivedRoutes = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "peer", "received_route_count"),
-		"How many routes did the BGP peer sent to this router (limited to IPv4).",
+
+	bgpPeerReceivedTotalMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_message_total_count"),
+		"The total number of messages the BGP peer sent to this router (limited to IPv4).",
 		[]string{"name"}, nil,
 	)
-	bgpPeerAcceptedRoutes = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "peer", "accepted_route_count"),
-		"How many routes were accepted from the routes received from this BGP peer (limited to IPv4)",
+
+	bgpPeerReceivedNotificationMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_notification_message_count"),
+		"How many Notification messages did the BGP peer sent to this router (limited to IPv4).",
 		[]string{"name"}, nil,
 	)
-	bgpPeerAdvertisedRoutes = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "peer", "advertised_route_count"),
-		"How many routes were advertised to this BGP peer (limited to IPv4).",
+
+	bgpPeerReceivedUpdateMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_update_message_count"),
+		"How many Update messages did the BGP peer sent to this router (limited to IPv4).",
 		[]string{"name"}, nil,
 	)
+	bgpPeerReceivedOpenMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_open_message_count"),
+		"How many Open messages did the BGP peer sent to this router (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerReceivedKeepaliveMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_keepalive_message_count"),
+		"How many messages did the BGP peer sent to this router (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerReceivedRefreshMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_refresh_message_count"),
+		"How many Refresh messages did the BGP peer sent to this router (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerReceivedWithdrawUpdateMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_withdraw_update_message_count"),
+		"How many WithdrawUpdate messages did the BGP peer sent to this router (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerReceivedWithdrawPrefixMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "received_withdraw_prefix_message_count"),
+		"How many messages did the BGP peer sent to this router (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+
+	bgpPeerSentTotalMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_message_total_count"),
+		"The total number of messages this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+
+	bgpPeerSentNotificationMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_notification_message_count"),
+		"How many Notification messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+
+	bgpPeerSentUpdateMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_update_message_count"),
+		"How many Update messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerSentOpenMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_open_message_count"),
+		"How many Open messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerSentKeepaliveMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_keepalive_message_count"),
+		"How many messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerSentRefreshMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_refresh_message_count"),
+		"How many Refresh messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerSentWithdrawUpdateMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_withdraw_update_message_count"),
+		"How many WithdrawUpdate messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+	bgpPeerSentWithdrawPrefixMessagesCount = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "sent_withdraw_prefix_message_count"),
+		"How many messages did this router sent to this BGP peer (limited to IPv4).",
+		[]string{"name"}, nil,
+	)
+
 	bgpPeerOutQueue = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "peer", "out_queue_count"),
 		"PeerState.OutQ",

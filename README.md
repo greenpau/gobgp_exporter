@@ -6,11 +6,6 @@ To run it:
 
 ```bash
 cd $GOPATH/src
-mkdir -p github.com/osrg
-cd github.com/osrg
-git clone https://github.com/osrg/gobgp.git
-
-cd $GOPATH/src
 mkdir -p github.com/ovnworks
 cd github.com/ovnworks
 git clone https://github.com/ovnworks/gobgp_exporter.git
@@ -29,17 +24,31 @@ make qtest
 `gobgp_router_failed_req_count` | The number of failed requests to GoBGP router. | |
 `gobgp_router_next_poll` | The timestamp of the next potential scrape of the router. | |
 `gobgp_router_scrape_time` | The amount of time it took to scrape the router. | |
-`gobgp_route_count_total` | The number of routes on per address family and resource type basis | `address_family`, `resource_type` |
+`gobgp_route_total_destination_count` | The number of routes on per address family and route table basis | `address_family`, `route_table` |
+`gobgp_route_total_path_count` | The number of available paths to destinations on per address family and route table basis | `address_family`, `route_table` |
+`gobgp_route_accepted_path_count` | The number of accepted paths to destinations on per address family and route table basis | `address_family`, `route_table` |
 `gobgp_peer_count` | The number of BGP peers | |
 `gobgp_peer_up` | Is the peer up and in established state (1) or it is not (0). | `name` |
 `gobgp_peer_asn` | What is the AS number of the peer | `name` |
 `gobgp_peer_local_asn` | What is the AS number presented to the peer by this router. | `name` |
 `gobgp_peer_admin_state` | Is the peer configured for being Up (0), Down (1), or PFX_CT (2) | `name` |
- "What is the state of BGP session to the peer
-`gobgp_peer_session_state` | unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `name` |
-`gobgp_peer_received_route_count` | How many routes did the BGP peer sent to this router (limited to IPv4). | `name` |
-`gobgp_peer_accepted_route_count` | How many routes were accepted from the routes received from this BGP peer (limited to IPv4) | `name` |
-`gobgp_peer_advertised_route_count` | How many routes were advertised to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_session_state` | What is the state of BGP session to the peer - unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `name` |
+`gobgp_peer_received_message_total_count` | The total number of messages the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_notification_message_count` | How many Notification messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_update_message_count` | How many Update messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_open_message_count` | How many Open messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_keepalive_message_count` | How many messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_refresh_message_count` | How many Refresh messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_withdraw_update_message_count` | How many WithdrawUpdate messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_received_withdraw_prefix_message_count` | How many messages did the BGP peer sent to this router (limited to IPv4). | `name` |
+`gobgp_peer_sent_message_total_count` | The total number of messages this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_notification_message_count` | How many Notification messages did this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_update_message_count` | How many Update messages did this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_open_message_count` | How many Open messages did this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_keepalive_message_count` | How many messages did this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_refresh_message_count` | How many Refresh messages did this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_withdraw_update_message_count` | How many WithdrawUpdate messages did this router sent to this BGP peer (limited to IPv4). | `name` |
+`gobgp_peer_sent_withdraw_prefix_message_count` | How many messages did this router sent to this BGP peer (limited to IPv4). | `name` |
 `gobgp_peer_out_queue_count` | PeerState.OutQ | `name` |
 `gobgp_peer_flop_count` | PeerState.Flops | `name` |
 `gobgp_peer_send_community` | PeerState.SendCommunity | `name` |
@@ -50,15 +59,9 @@ make qtest
 For example:
 
 ```
-# HELP gobgp_peer_accepted_route_count How many routes were accepted from the routes received from this BGP peer (limited to IPv4)
-# TYPE gobgp_peer_accepted_route_count gauge
-gobgp_peer_accepted_route_count{name="10.0.2.100"} 0
 # HELP gobgp_peer_admin_state Is the peer configured for being Up (0), Down (1), or PFX_CT (2)
 # TYPE gobgp_peer_admin_state gauge
 gobgp_peer_admin_state{name="10.0.2.100"} 0
-# HELP gobgp_peer_advertised_route_count How many routes were advertised to this BGP peer (limited to IPv4).
-# TYPE gobgp_peer_advertised_route_count gauge
-gobgp_peer_advertised_route_count{name="10.0.2.100"} 0
 # HELP gobgp_peer_asn What is the AS number of the peer
 # TYPE gobgp_peer_asn gauge
 gobgp_peer_asn{name="10.0.2.100"} 65001
@@ -77,30 +80,159 @@ gobgp_peer_out_queue_count{name="10.0.2.100"} 0
 # HELP gobgp_peer_password_set Whether the GoBGP peer has been configured (1) for authentication or not (0)
 # TYPE gobgp_peer_password_set gauge
 gobgp_peer_password_set{name="10.0.2.100"} 0
-# HELP gobgp_peer_received_route_count How many routes did the BGP peer sent to this router (limited to IPv4).
-# TYPE gobgp_peer_received_route_count gauge
-gobgp_peer_received_route_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_keepalive_message_count How many messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_keepalive_message_count gauge
+gobgp_peer_received_keepalive_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_message_total_count The total number of messages the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_message_total_count gauge
+gobgp_peer_received_message_total_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_notification_message_count How many Notification messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_notification_message_count gauge
+gobgp_peer_received_notification_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_open_message_count How many Open messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_open_message_count gauge
+gobgp_peer_received_open_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_refresh_message_count How many Refresh messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_refresh_message_count gauge
+gobgp_peer_received_refresh_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_update_message_count How many Update messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_update_message_count gauge
+gobgp_peer_received_update_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_withdraw_prefix_message_count How many messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_withdraw_prefix_message_count gauge
+gobgp_peer_received_withdraw_prefix_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_received_withdraw_update_message_count How many WithdrawUpdate messages did the BGP peer sent to this router (limited to IPv4).
+# TYPE gobgp_peer_received_withdraw_update_message_count gauge
+gobgp_peer_received_withdraw_update_message_count{name="10.0.2.100"} 0
 # HELP gobgp_peer_remove_private_as PeerState.RemovePrivateAs
 # TYPE gobgp_peer_remove_private_as gauge
 gobgp_peer_remove_private_as{name="10.0.2.100"} 0
 # HELP gobgp_peer_send_community PeerState.SendCommunity
 # TYPE gobgp_peer_send_community gauge
 gobgp_peer_send_community{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_keepalive_message_count How many messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_keepalive_message_count gauge
+gobgp_peer_sent_keepalive_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_message_total_count The total number of messages this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_message_total_count gauge
+gobgp_peer_sent_message_total_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_notification_message_count How many Notification messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_notification_message_count gauge
+gobgp_peer_sent_notification_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_open_message_count How many Open messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_open_message_count gauge
+gobgp_peer_sent_open_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_refresh_message_count How many Refresh messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_refresh_message_count gauge
+gobgp_peer_sent_refresh_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_update_message_count How many Update messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_update_message_count gauge
+gobgp_peer_sent_update_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_withdraw_prefix_message_count How many messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_withdraw_prefix_message_count gauge
+gobgp_peer_sent_withdraw_prefix_message_count{name="10.0.2.100"} 0
+# HELP gobgp_peer_sent_withdraw_update_message_count How many WithdrawUpdate messages did this router sent to this BGP peer (limited to IPv4).
+# TYPE gobgp_peer_sent_withdraw_update_message_count gauge
+gobgp_peer_sent_withdraw_update_message_count{name="10.0.2.100"} 0
 # HELP gobgp_peer_session_state What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6)
 # TYPE gobgp_peer_session_state gauge
-gobgp_peer_session_state{name="10.0.2.100"} 0
+gobgp_peer_session_state{name="10.0.2.100"} 3
 # HELP gobgp_peer_type PeerState.PeerType
 # TYPE gobgp_peer_type gauge
 gobgp_peer_type{name="10.0.2.100"} 0
 # HELP gobgp_peer_up Is the peer up and in established state (1) or it is not (0).
 # TYPE gobgp_peer_up gauge
 gobgp_peer_up{name="10.0.2.100"} 0
-# HELP gobgp_route_count_total The number of routes on per address family and resource type basis
-# TYPE gobgp_route_count_total gauge
-gobgp_route_count_total{address_family="evpn",resource_type="global"} 0
-gobgp_route_count_total{address_family="evpn",resource_type="local"} 0
-gobgp_route_count_total{address_family="ipv4",resource_type="global"} 1
-gobgp_route_count_total{address_family="ipv4",resource_type="local"} 1
+# HELP gobgp_route_accepted_path_count The number of accepted paths to destinations on per address family and route table basis
+# TYPE gobgp_route_accepted_path_count gauge
+gobgp_route_accepted_path_count{address_family="evpn",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="evpn",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv4",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv4",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_encap",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_encap",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_flowspec",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_flowspec",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_mpls",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_mpls",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_vpn",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_vpn",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_vpn_flowspec",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv4_vpn_flowspec",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv6",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv6",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_encap",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_encap",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_flowspec",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_flowspec",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_mpls",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_mpls",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_vpn",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_vpn",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_vpn_flowspec",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="ipv6_vpn_flowspec",route_table="local"} 0
+gobgp_route_accepted_path_count{address_family="l2_vpn_flowspec",route_table="global"} 0
+gobgp_route_accepted_path_count{address_family="l2_vpn_flowspec",route_table="local"} 0
+# HELP gobgp_route_total_destination_count The number of routes on per address family and route table basis
+# TYPE gobgp_route_total_destination_count gauge
+gobgp_route_total_destination_count{address_family="evpn",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="evpn",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv4",route_table="global"} 3
+gobgp_route_total_destination_count{address_family="ipv4",route_table="local"} 3
+gobgp_route_total_destination_count{address_family="ipv4_encap",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv4_encap",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv4_flowspec",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv4_flowspec",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv4_mpls",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv4_mpls",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv4_vpn",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv4_vpn",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv4_vpn_flowspec",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv4_vpn_flowspec",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv6",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv6",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv6_encap",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv6_encap",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv6_flowspec",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv6_flowspec",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv6_mpls",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv6_mpls",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv6_vpn",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv6_vpn",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="ipv6_vpn_flowspec",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="ipv6_vpn_flowspec",route_table="local"} 0
+gobgp_route_total_destination_count{address_family="l2_vpn_flowspec",route_table="global"} 0
+gobgp_route_total_destination_count{address_family="l2_vpn_flowspec",route_table="local"} 0
+# HELP gobgp_route_total_path_count The number of available paths to destinations on per address family and route table basis
+# TYPE gobgp_route_total_path_count gauge
+gobgp_route_total_path_count{address_family="evpn",route_table="global"} 0
+gobgp_route_total_path_count{address_family="evpn",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv4",route_table="global"} 3
+gobgp_route_total_path_count{address_family="ipv4",route_table="local"} 3
+gobgp_route_total_path_count{address_family="ipv4_encap",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv4_encap",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv4_flowspec",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv4_flowspec",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv4_mpls",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv4_mpls",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv4_vpn",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv4_vpn",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv4_vpn_flowspec",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv4_vpn_flowspec",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv6",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv6",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv6_encap",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv6_encap",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv6_flowspec",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv6_flowspec",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv6_mpls",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv6_mpls",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv6_vpn",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv6_vpn",route_table="local"} 0
+gobgp_route_total_path_count{address_family="ipv6_vpn_flowspec",route_table="global"} 0
+gobgp_route_total_path_count{address_family="ipv6_vpn_flowspec",route_table="local"} 0
+gobgp_route_total_path_count{address_family="l2_vpn_flowspec",route_table="global"} 0
+gobgp_route_total_path_count{address_family="l2_vpn_flowspec",route_table="local"} 0
 # HELP gobgp_router_asn What is GoBGP AS number.
 # TYPE gobgp_router_asn gauge
 gobgp_router_asn 65001
@@ -112,10 +244,10 @@ gobgp_router_failed_req_count 0
 gobgp_router_id 1
 # HELP gobgp_router_next_poll The timestamp of the next potential scrape of the router.
 # TYPE gobgp_router_next_poll counter
-gobgp_router_next_poll 1.551178392e+09
+gobgp_router_next_poll 0
 # HELP gobgp_router_scrape_time The amount of time it took to scrape the router.
 # TYPE gobgp_router_scrape_time gauge
-gobgp_router_scrape_time 0.006621245
+gobgp_router_scrape_time 0.019645428
 # HELP gobgp_router_up Is GoBGP up and responds to queries (1) or is it down (0).
 # TYPE gobgp_router_up gauge
 gobgp_router_up 1
@@ -162,9 +294,3 @@ Documentation: https://github.com/ovnworks/gobgp_exporter/
 * __`version`:__ Show application version.
 * __`web.listen-address`:__ Address to listen on for web interface and telemetry.
 * __`web.telemetry-path`:__ Path under which to expose metrics.
-
-## Outstanding Issues
-
-The following is a list of issues related to GoBGP package itself:
-- `gobgp_peer_session_state` reports `0`, although a router maybe in `established` (`5`) state.
-  The metric is being derived from `PeerState.SessionState`
