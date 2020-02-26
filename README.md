@@ -6,6 +6,11 @@ To run it:
 
 ```bash
 cd $GOPATH/src
+mkdir -p github.com/osrg
+cd github.com/osrg
+git clone https://github.com/osrg/gobgp.git
+
+cd $GOPATH/src
 mkdir -p github.com/ovnworks
 cd github.com/ovnworks
 git clone https://github.com/ovnworks/gobgp_exporter.git
