@@ -41,7 +41,7 @@ var (
 	)
 	routerPeerSessionState = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "peer", "session_state"),
-		"What is the state of BGP session to the peer: unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6)",
+		"What is the state of BGP session to the peer - unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6)",
 		[]string{"name"}, nil,
 	)
 

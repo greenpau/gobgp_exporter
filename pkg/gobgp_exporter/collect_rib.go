@@ -130,6 +130,7 @@ func (n *RouterNode) GetRibCounters() {
 				float64(serverResponse.GetNumDestination()),
 				strings.ToLower(tableTypeName),
 				strings.ToLower(addressFamilyName),
+				"default",
 			))
 
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -138,6 +139,7 @@ func (n *RouterNode) GetRibCounters() {
 				float64(serverResponse.GetNumPath()),
 				strings.ToLower(tableTypeName),
 				strings.ToLower(addressFamilyName),
+				"default",
 			))
 
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -146,6 +148,7 @@ func (n *RouterNode) GetRibCounters() {
 				float64(serverResponse.GetNumAccepted()),
 				strings.ToLower(tableTypeName),
 				strings.ToLower(addressFamilyName),
+				"default",
 			))
 
 		}

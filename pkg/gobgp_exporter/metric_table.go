@@ -75,9 +75,9 @@ func (n *RouterNode) GetMetricsTable() string {
 		}
 		sort.Strings(labels)
 		if len(labels) > 0 {
-			out.WriteString(fmt.Sprintf("`%s` | %s | `%s` |\n", descr["name"], descr["help"], strings.Join(labels, "`, `")))
+			out.WriteString(fmt.Sprintf("| `%s` | %s | `%s` |\n", descr["name"], descr["help"], strings.Join(labels, "`, `")))
 		} else {
-			out.WriteString(fmt.Sprintf("`%s` | %s | |\n", descr["name"], descr["help"]))
+			out.WriteString(fmt.Sprintf("| `%s` | %s | |\n", descr["name"], descr["help"]))
 		}
 	}
 	return out.String()

@@ -49,25 +49,6 @@ var (
 		"The amount of time it took to scrape the router.",
 		nil, nil,
 	)
-
-	routerRibTotalDestinationCount = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "route", "total_destination_count"),
-		"The number of routes on per address family and route table basis",
-		[]string{"route_table", "address_family"}, nil,
-	)
-
-	routerRibTotalPathCount = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "route", "total_path_count"),
-		"The number of available paths to destinations on per address family and route table basis",
-		[]string{"route_table", "address_family"}, nil,
-	)
-
-	routerRibAcceptedPathCount = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "route", "accepted_path_count"),
-		"The number of accepted paths to destinations on per address family and route table basis",
-		[]string{"route_table", "address_family"}, nil,
-	)
-
 	routerPeers = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "peer", "count"),
 		"The number of BGP peers",
