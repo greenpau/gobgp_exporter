@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	exporter "github.com/ovnworks/gobgp_exporter/pkg/gobgp_exporter"
+	exporter "github.com/forward53/gobgp_exporter/pkg/gobgp_exporter"
 	"github.com/prometheus/common/log"
 	"net/http"
 	"os"
@@ -34,7 +34,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n%s - Prometheus Exporter for GoBGP\n\n", exporter.GetExporterName())
 		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", exporter.GetExporterName())
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\nDocumentation: https://github.com/ovnworks/gobgp_exporter/\n\n")
+		fmt.Fprintf(os.Stderr, "\nDocumentation: https://github.com/forward53/gobgp_exporter/\n\n")
 	}
 	flag.Usage = usageHelp
 	flag.Parse()

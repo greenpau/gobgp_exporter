@@ -1,4 +1,4 @@
-module github.com/ovnworks/gobgp_exporter
+module github.com/forward53/gobgp_exporter
 
 go 1.13
 
