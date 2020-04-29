@@ -93,6 +93,14 @@ gobgp:
 gobgp-down:
 	@sudo systemctl stop gobgpd
 
-tag:
-	@git tag -s "v$(APP_VERSION)" -m "v$(APP_VERSION)"
+release:
+	@echo "Making release"
+	@if [ $(GIT_BRANCH) != "master" ]; then echo "cannot release to non-master branch $(GIT_BRANCH)" && false; fi
+	@git diff-index --quiet HEAD -- || ( echo "git directory is dirty, commit changes first" && false )
+	@versioned -patch
+	@echo "Patched version"
+	@git add VERSION
+	@git commit -m "released v`cat VERSION | head -1`"
+	@git tag -a v`cat VERSION | head -1` -m "v`cat VERSION | head -1`"
+	@git push
 	@git push --tags
