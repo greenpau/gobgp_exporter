@@ -22,7 +22,7 @@ make qtest
 | **Metric** | **Description** | **Labels** |
 | ------ | ------- | ------ |
 | `gobgp_router_up` | Is GoBGP up and responds to queries (1) or is it down (0). | |
-| `gobgp_router_id` | What is GoBGP router ID. | |
+| `gobgp_router_id` | What is GoBGP router ID. | `id` |
 | `gobgp_router_asn` | What is GoBGP AS number. | |
 | `gobgp_router_failed_req_count` | The number of failed requests to GoBGP router. | |
 | `gobgp_router_next_poll` | The timestamp of the next potential scrape of the router. | |
