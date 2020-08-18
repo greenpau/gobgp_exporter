@@ -99,6 +99,7 @@ func (n *RouterNode) GatherMetrics() {
 			routerID,
 			prometheus.GaugeValue,
 			1,
+			n.routerID,
 		))
 	}
 	if n.localAS > 0 {

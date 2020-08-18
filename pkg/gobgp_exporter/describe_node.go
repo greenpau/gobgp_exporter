@@ -27,7 +27,7 @@ var (
 	routerID = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "router", "id"),
 		"What is GoBGP router ID.",
-		nil, nil,
+		[]string{"id"}, nil,
 	)
 	routerLocalAS = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "router", "asn"),
