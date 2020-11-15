@@ -60,6 +60,8 @@ func (n *RouterNode) GetPeers() {
 	for _, p := range peers {
 		peerState := p.GetState()
 		peerRouterID := peerState.GetNeighborAddress()
+		peerConf := p.GetConf()
+		peerDescription := peerConf.GetDescription()
 
 		// Peer Up/Down
 		if peerState.GetRouterId() != "" {
@@ -68,6 +70,7 @@ func (n *RouterNode) GetPeers() {
 				prometheus.GaugeValue,
 				1,
 				peerRouterID,
+				peerDescription,
 			))
 		} else {
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -75,6 +78,7 @@ func (n *RouterNode) GetPeers() {
 				prometheus.GaugeValue,
 				0,
 				peerRouterID,
+				peerDescription,
 			))
 		}
 		// Peer ASN
@@ -83,6 +87,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetPeerAs()),
 			peerRouterID,
+			peerDescription,
 		))
 		// Peer Admin State: Up (0), Down (1), PFX_CT (2)
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -90,6 +95,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetAdminState()),
 			peerRouterID,
+			peerDescription,
 		))
 		// Peer Session State: idle (0), connect (1), active (2), opensent (3)
 		// openconfirm (4), established (5).
@@ -98,6 +104,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetSessionState()),
 			peerRouterID,
+			peerDescription,
 		))
 		// Local AS advertised to the peer
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -105,6 +112,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetLocalAs()),
 			peerRouterID,
+			peerDescription,
 		))
 
 		peerMessages := peerState.GetMessages()
@@ -136,48 +144,56 @@ func (n *RouterNode) GetPeers() {
 				prometheus.GaugeValue,
 				float64(peerReceivedTotalMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedNotificationMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedNotificationMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedUpdateMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedUpdateMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedOpenMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedOpenMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedKeepaliveMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedKeepaliveMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedRefreshMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedRefreshMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedWithdrawUpdateMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedWithdrawUpdateMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerReceivedWithdrawPrefixMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerReceivedWithdrawPrefixMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 
 			// The number of messages sent to the peer
@@ -207,48 +223,56 @@ func (n *RouterNode) GetPeers() {
 				prometheus.GaugeValue,
 				float64(peerSentTotalMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentNotificationMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentNotificationMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentUpdateMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentUpdateMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentOpenMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentOpenMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentKeepaliveMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentKeepaliveMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentRefreshMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentRefreshMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentWithdrawUpdateMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentWithdrawUpdateMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 			n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 				bgpPeerSentWithdrawPrefixMessagesCount,
 				prometheus.GaugeValue,
 				float64(peerSentWithdrawPrefixMessagesCount),
 				peerRouterID,
+				peerDescription,
 			))
 
 		}
@@ -259,6 +283,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetOutQ()),
 			peerRouterID,
+			peerDescription,
 		))
 		// The number of neighbor flops
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -266,6 +291,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetFlops()),
 			peerRouterID,
+			peerDescription,
 		))
 		// Whether BGP community is being sent
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -273,6 +299,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetSendCommunity()),
 			peerRouterID,
+			peerDescription,
 		))
 		// Whether BGP Private AS is being removed
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -280,6 +307,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetRemovePrivateAs()),
 			peerRouterID,
+			peerDescription,
 		))
 		// Whether authentication password is being set (1) or not (0)
 		passwordSetFlag := 0
@@ -291,6 +319,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(passwordSetFlag),
 			peerRouterID,
+			peerDescription,
 		))
 		// Peer Type
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
@@ -298,6 +327,7 @@ func (n *RouterNode) GetPeers() {
 			prometheus.GaugeValue,
 			float64(peerState.GetPeerType()),
 			peerRouterID,
+			peerDescription,
 		))
 
 	}

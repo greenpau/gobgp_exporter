@@ -31,33 +31,33 @@ make qtest
 | `gobgp_route_total_path_count` | The number of available paths to destinations on per address family and route table basis | `address_family`, `route_table`, `vrf_name` |
 | `gobgp_route_accepted_path_count` | The number of accepted paths to destinations on per address family and route table basis | `address_family`, `route_table`, `vrf_name` |
 | `gobgp_peer_count` | The number of BGP peers | |
-| `gobgp_peer_up` | Is the peer up and in established state (1) or it is not (0). | `name` |
-| `gobgp_peer_asn` | What is the AS number of the peer | `name` |
-| `gobgp_peer_local_asn` | What is the AS number presented to the peer by this router. | `name` |
-| `gobgp_peer_admin_state` | Is the peer configured for being Up (0), Down (1), or PFX_CT (2) | `name` |
-| `gobgp_peer_session_state` | What is the state of BGP session to the peer - unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `name` |
-| `gobgp_peer_received_message_total_count` | The total number of messages the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_notification_message_count` | How many Notification messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_update_message_count` | How many Update messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_open_message_count` | How many Open messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_keepalive_message_count` | How many messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_refresh_message_count` | How many Refresh messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_withdraw_update_message_count` | How many WithdrawUpdate messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_received_withdraw_prefix_message_count` | How many messages did the BGP peer sent to this router (limited to IPv4). | `name` |
-| `gobgp_peer_sent_message_total_count` | The total number of messages this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_notification_message_count` | How many Notification messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_update_message_count` | How many Update messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_open_message_count` | How many Open messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_keepalive_message_count` | How many messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_refresh_message_count` | How many Refresh messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_withdraw_update_message_count` | How many WithdrawUpdate messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_sent_withdraw_prefix_message_count` | How many messages did this router sent to this BGP peer (limited to IPv4). | `name` |
-| `gobgp_peer_out_queue_count` | PeerState.OutQ | `name` |
-| `gobgp_peer_flop_count` | PeerState.Flops | `name` |
-| `gobgp_peer_send_community` | PeerState.SendCommunity | `name` |
-| `gobgp_peer_remove_private_as` | PeerState.RemovePrivateAs | `name` |
-| `gobgp_peer_password_set` | Whether the GoBGP peer has been configured (1) for authentication or not (0) | `name` |
-| `gobgp_peer_type` | PeerState.PeerType | `name` |
+| `gobgp_peer_up` | Is the peer up and in established state (1) or it is not (0). | `name`, `description` |
+| `gobgp_peer_asn` | What is the AS number of the peer | `name`, `description` |
+| `gobgp_peer_local_asn` | What is the AS number presented to the peer by this router. | `name`, `description` |
+| `gobgp_peer_admin_state` | Is the peer configured for being Up (0), Down (1), or PFX_CT (2) | `name`, `description` |
+| `gobgp_peer_session_state` | What is the state of BGP session to the peer - unknown (0), idle (1), connect (2), active (3), opensent (4), openconfirm (5), established (6) | `name`, `description` |
+| `gobgp_peer_received_message_total_count` | The total number of messages the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_notification_message_count` | How many Notification messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_update_message_count` | How many Update messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_open_message_count` | How many Open messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_keepalive_message_count` | How many messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_refresh_message_count` | How many Refresh messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_withdraw_update_message_count` | How many WithdrawUpdate messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_received_withdraw_prefix_message_count` | How many messages did the BGP peer sent to this router (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_message_total_count` | The total number of messages this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_notification_message_count` | How many Notification messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_update_message_count` | How many Update messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_open_message_count` | How many Open messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_keepalive_message_count` | How many messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_refresh_message_count` | How many Refresh messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_withdraw_update_message_count` | How many WithdrawUpdate messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_sent_withdraw_prefix_message_count` | How many messages did this router sent to this BGP peer (limited to IPv4). | `name`, `description` |
+| `gobgp_peer_out_queue_count` | PeerState.OutQ | `name`, `description` |
+| `gobgp_peer_flop_count` | PeerState.Flops | `name`, `description` |
+| `gobgp_peer_send_community` | PeerState.SendCommunity | `name`, `description` |
+| `gobgp_peer_remove_private_as` | PeerState.RemovePrivateAs | `name`, `description` |
+| `gobgp_peer_password_set` | Whether the GoBGP peer has been configured (1) for authentication or not (0) | `name`, `description` |
+| `gobgp_peer_type` | PeerState.PeerType | `name`, `description` |
 
 For example:
 
