@@ -9,9 +9,9 @@ To run it:
 
 ```bash
 cd $GOPATH/src
-mkdir -p github.com/forward53
-cd github.com/forward53
-git clone https://github.com/forward53/gobgp_exporter.git
+mkdir -p github.com/greenpau
+cd github.com/greenpau
+git clone https://github.com/greenpau/gobgp_exporter.git
 cd gobgp_exporter
 make
 make qtest
@@ -284,7 +284,7 @@ Usage: gobgp-exporter [arguments]
   -web.telemetry-path string
         Path under which to expose metrics. (default "/metrics")
 
-Documentation: https://github.com/forward53/gobgp_exporter/
+Documentation: https://github.com/greenpau/gobgp_exporter/
 ```
 
 * __`gobgp.address`:__ Address (host and port) of the GoBGP instance we should

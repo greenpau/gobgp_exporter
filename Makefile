@@ -7,7 +7,7 @@ BUILD_DATE:=$(shell date +"%Y-%m-%d")
 ALIAS=gobgp_exporter
 BINARY:=gobgp-exporter
 VERBOSE:=-v
-PROJECT=github.com/forward53/$(ALIAS)
+PROJECT=github.com/greenpau/$(ALIAS)
 PKG_DIR=pkg/$(ALIAS)
 PKG_PORT="9474"
 
@@ -76,7 +76,7 @@ dist: all
 dep:
 	@echo "Making dependencies check ..."
 	@#echo "Clean GOPATH/pkg/dep/sources/ if necessary"
-	@#rm -rf $GOPATH/pkg/dep/sources/https---github.com-forward53*
+	@#rm -rf $GOPATH/pkg/dep/sources/https---github.com-greenpau*
 	@dep version || go get -u github.com/golang/dep/cmd/dep
 	@dep ensure
 
