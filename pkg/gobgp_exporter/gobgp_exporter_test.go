@@ -27,6 +27,9 @@ func TestNewExporter(t *testing.T) {
 		{address: "localaddress:50051", ok: false},
 		{address: "http://localaddress:50051", ok: false},
 		{address: "fuuuu://localaddress:50051", ok: false},
+		{address: "dns:///localhost:50051", ok: true},
+		{address: "[::1]:50051", ok: true},
+		{address: "::1:50051", ok: false},
 	}
 	pollTimeout := 2
 	for _, test := range cases {
