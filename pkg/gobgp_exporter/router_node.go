@@ -96,18 +96,29 @@ func validAddress(s string) error {
 	if s == "" {
 		return fmt.Errorf("empty address")
 	}
-	arr := strings.Split(s, ":")
-	if len(arr) != 2 {
-		return fmt.Errorf("invalid address %s, expected 'ipaddress:port'", s)
+
+	host, strport, err := net.SplitHostPort(s)
+	if host != "" {
+		if addr := net.ParseIP(host); addr == nil {
+			return fmt.Errorf("invalid IP address in %s", s)
+		}
+	} else if ! strings.HasPrefix(s, "dns://") {
+		return fmt.Errorf("invalid address format in %s", s)
+	} else {
+		// "dns://" prefix for hostname is allowed per go grpc documentation
+		// see https://pkg.go.dev/google.golang.org/grpc#DialContext
+		idx := strings.LastIndex(s, ":")
+		host = s[0:idx]
+		strport = s[idx+1:]
 	}
-	if addr := net.ParseIP(arr[0]); addr == nil {
-		return fmt.Errorf("invalid IP address in %s", s)
-	}
-	port, err := strconv.Atoi(arr[1])
+
+	log.Debugf("uri: %s, host: %s, port: %s ", s, host, strport)
+
+	port, err := strconv.Atoi(strport)
 	if err != nil {
 		return err
 	}
-	if strconv.Itoa(port) != arr[1] {
+	if strconv.Itoa(port) != strport {
 		return fmt.Errorf("invalid port in %s", s)
 	}
 	if port < 1024 || port > 65535 {
