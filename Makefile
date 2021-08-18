@@ -75,10 +75,9 @@ dist: all
 
 dep:
 	@echo "Making dependencies check ..."
-	@#echo "Clean GOPATH/pkg/dep/sources/ if necessary"
-	@#rm -rf $GOPATH/pkg/dep/sources/https---github.com-greenpau*
-	@dep version || go get -u github.com/golang/dep/cmd/dep
-	@dep ensure
+	@golint || go get -u golang.org/x/lint/golint
+	@versioned || go get -u github.com/greenpau/versioned/cmd/versioned
+	@echo "$@: complete"
 
 gobgp:
 	@sudo systemctl stop gobgpd
@@ -95,6 +94,8 @@ gobgp-down:
 
 release:
 	@echo "Making release"
+	@go mod tidy
+	@go mod verify
 	@if [ $(GIT_BRANCH) != "master" ]; then echo "cannot release to non-master branch $(GIT_BRANCH)" && false; fi
 	@git diff-index --quiet HEAD -- || ( echo "git directory is dirty, commit changes first" && false )
 	@versioned -patch

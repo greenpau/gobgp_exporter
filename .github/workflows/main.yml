@@ -30,12 +30,14 @@ jobs:
     - name: Install Go modules
       run: |
         mkdir -p .coverage
+        make dep
     - name: Run tests
       run: |
         # go test -v -coverprofile=.coverage/coverage.out ./*.go
         # go tool cover -html=.coverage/coverage.out -o .coverage/coverage.html
         # go test -covermode=count -coverprofile=.coverage/coverage.out ./*.go
         # go tool cover -func=.coverage/coverage.out | grep -v 100
+        make linter
         make
     # - name: Upload coverage report
     #  uses: actions/upload-artifact@v1
