@@ -120,5 +120,4 @@ func (n *RouterNode) GatherMetrics() {
 	n.timestamp = time.Now().Format(time.RFC3339)
 
 	log.Debugf("GatherMetrics() returns")
-	return
 }

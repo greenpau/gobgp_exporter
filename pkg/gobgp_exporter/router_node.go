@@ -21,6 +21,7 @@ import (
 	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"strconv"
 	"strings"
@@ -78,7 +79,7 @@ func NewRouterNode(addr string, timeout int) (*RouterNode, error) {
 	n.addressFamilies["EVPN"] = true
 
 	grpcOpts := []grpc.DialOption{grpc.WithBlock()}
-	grpcOpts = append(grpcOpts, grpc.WithInsecure())
+	grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
@@ -176,8 +177,5 @@ func (n *RouterNode) Collect(ch chan<- prometheus.Metric) {
 
 // IsConnectionError checks whether it is connectivity issue.
 func IsConnectionError(err error) bool {
-	if strings.Contains(err.Error(), "connection") {
-		return true
-	}
-	return false
+	return strings.Contains(err.Error(), "connection")
 }

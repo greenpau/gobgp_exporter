@@ -155,5 +155,4 @@ func (n *RouterNode) GetRibCounters() {
 
 	}
 
-	return
 }

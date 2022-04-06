@@ -301,5 +301,4 @@ func (n *RouterNode) GetPeers() {
 		))
 
 	}
-	return
 }

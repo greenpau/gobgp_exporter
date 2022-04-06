@@ -57,5 +57,4 @@ func (e *Exporter) Summary(p string, w http.ResponseWriter, r *http.Request) {
 	sb.WriteString(`</body>`)
 	sb.WriteString(`</html>`)
 	w.Write([]byte(sb.String()))
-	return
 }
