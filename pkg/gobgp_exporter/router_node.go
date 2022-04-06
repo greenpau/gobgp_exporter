@@ -30,12 +30,6 @@ import (
 	"time"
 )
 
-type credential struct {
-	Username string
-	Password string
-	Failed   bool
-}
-
 // RouterNode is an instance of a GoBGP router.
 type RouterNode struct {
 	sync.RWMutex
@@ -45,17 +39,13 @@ type RouterNode struct {
 	localAS              uint32
 	resourceTypes        map[string]bool
 	addressFamilies      map[string]bool
-	port                 int
 	result               string
-	module               string
 	timestamp            string
 	pollInterval         int64
-	timeout              int
 	errors               int64
 	errorsLocker         sync.RWMutex
 	nextCollectionTicker int64
 	metrics              []prometheus.Metric
-	lastConnected        int64
 	connected            bool
 }
 
@@ -99,7 +89,9 @@ func validAddress(s string) error {
 	}
 
 	host, strport, err := net.SplitHostPort(s)
-	if host != "" {
+	if err != nil {
+		return err
+	} else if host != "" {
 		if addr := net.ParseIP(host); addr == nil {
 			return fmt.Errorf("invalid IP address in %s", s)
 		}

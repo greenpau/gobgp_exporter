@@ -56,5 +56,5 @@ func (e *Exporter) Summary(p string, w http.ResponseWriter, r *http.Request) {
 	sb.WriteString(`</table>`)
 	sb.WriteString(`</body>`)
 	sb.WriteString(`</html>`)
-	w.Write([]byte(sb.String()))
+	w.Write([]byte(sb.String())) //nolint:errcheck
 }
