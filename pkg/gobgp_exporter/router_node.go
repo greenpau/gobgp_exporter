@@ -16,11 +16,12 @@ package exporter
 
 import (
 	"fmt"
-	gobgpapi "github.com/osrg/gobgp/api"
+	gobgpapi "github.com/osrg/gobgp/v3/api"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"strconv"
 	"strings"
@@ -28,12 +29,6 @@ import (
 	"sync/atomic"
 	"time"
 )
-
-type credential struct {
-	Username string
-	Password string
-	Failed   bool
-}
 
 // RouterNode is an instance of a GoBGP router.
 type RouterNode struct {
@@ -44,17 +39,13 @@ type RouterNode struct {
 	localAS              uint32
 	resourceTypes        map[string]bool
 	addressFamilies      map[string]bool
-	port                 int
 	result               string
-	module               string
 	timestamp            string
 	pollInterval         int64
-	timeout              int
 	errors               int64
 	errorsLocker         sync.RWMutex
 	nextCollectionTicker int64
 	metrics              []prometheus.Metric
-	lastConnected        int64
 	connected            bool
 }
 
@@ -78,7 +69,7 @@ func NewRouterNode(addr string, timeout int) (*RouterNode, error) {
 	n.addressFamilies["EVPN"] = true
 
 	grpcOpts := []grpc.DialOption{grpc.WithBlock()}
-	grpcOpts = append(grpcOpts, grpc.WithInsecure())
+	grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
@@ -98,11 +89,13 @@ func validAddress(s string) error {
 	}
 
 	host, strport, err := net.SplitHostPort(s)
-	if host != "" {
+	if err != nil {
+		return err
+	} else if host != "" {
 		if addr := net.ParseIP(host); addr == nil {
 			return fmt.Errorf("invalid IP address in %s", s)
 		}
-	} else if ! strings.HasPrefix(s, "dns://") {
+	} else if !strings.HasPrefix(s, "dns://") {
 		return fmt.Errorf("invalid address format in %s", s)
 	} else {
 		// "dns://" prefix for hostname is allowed per go grpc documentation
@@ -176,8 +169,5 @@ func (n *RouterNode) Collect(ch chan<- prometheus.Metric) {
 
 // IsConnectionError checks whether it is connectivity issue.
 func IsConnectionError(err error) bool {
-	if strings.Contains(err.Error(), "connection") {
-		return true
-	}
-	return false
+	return strings.Contains(err.Error(), "connection")
 }

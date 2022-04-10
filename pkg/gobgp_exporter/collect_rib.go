@@ -15,7 +15,7 @@
 package exporter
 
 import (
-	gobgpapi "github.com/osrg/gobgp/api"
+	gobgpapi "github.com/osrg/gobgp/v3/api"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
@@ -23,59 +23,59 @@ import (
 )
 
 var addressFamilies = map[string]*gobgpapi.Family{
-	"ipv4": &gobgpapi.Family{
+	"ipv4": {
 		Afi:  gobgpapi.Family_AFI_IP,
 		Safi: gobgpapi.Family_SAFI_UNICAST,
 	},
-	"ipv6": &gobgpapi.Family{
+	"ipv6": {
 		Afi:  gobgpapi.Family_AFI_IP6,
 		Safi: gobgpapi.Family_SAFI_UNICAST,
 	},
-	"ipv4_vpn": &gobgpapi.Family{
+	"ipv4_vpn": {
 		Afi:  gobgpapi.Family_AFI_IP,
 		Safi: gobgpapi.Family_SAFI_MPLS_VPN,
 	},
-	"ipv6_vpn": &gobgpapi.Family{
+	"ipv6_vpn": {
 		Afi:  gobgpapi.Family_AFI_IP6,
 		Safi: gobgpapi.Family_SAFI_MPLS_VPN,
 	},
-	"ipv4_mpls": &gobgpapi.Family{
+	"ipv4_mpls": {
 		Afi:  gobgpapi.Family_AFI_IP,
 		Safi: gobgpapi.Family_SAFI_MPLS_LABEL,
 	},
-	"ipv6_mpls": &gobgpapi.Family{
+	"ipv6_mpls": {
 		Afi:  gobgpapi.Family_AFI_IP6,
 		Safi: gobgpapi.Family_SAFI_MPLS_LABEL,
 	},
-	"evpn": &gobgpapi.Family{
+	"evpn": {
 		Afi:  gobgpapi.Family_AFI_L2VPN,
 		Safi: gobgpapi.Family_SAFI_EVPN,
 	},
-	"ipv4_encap": &gobgpapi.Family{
+	"ipv4_encap": {
 		Afi:  gobgpapi.Family_AFI_IP,
 		Safi: gobgpapi.Family_SAFI_ENCAPSULATION,
 	},
-	"ipv6_encap": &gobgpapi.Family{
+	"ipv6_encap": {
 		Afi:  gobgpapi.Family_AFI_IP6,
 		Safi: gobgpapi.Family_SAFI_ENCAPSULATION,
 	},
-	"ipv4_flowspec": &gobgpapi.Family{
+	"ipv4_flowspec": {
 		Afi:  gobgpapi.Family_AFI_IP,
 		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_UNICAST,
 	},
-	"ipv6_flowspec": &gobgpapi.Family{
+	"ipv6_flowspec": {
 		Afi:  gobgpapi.Family_AFI_IP6,
 		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_UNICAST,
 	},
-	"ipv4_vpn_flowspec": &gobgpapi.Family{
+	"ipv4_vpn_flowspec": {
 		Afi:  gobgpapi.Family_AFI_IP,
 		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_VPN,
 	},
-	"ipv6_vpn_flowspec": &gobgpapi.Family{
+	"ipv6_vpn_flowspec": {
 		Afi:  gobgpapi.Family_AFI_IP6,
 		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_VPN,
 	},
-	"l2_vpn_flowspec": &gobgpapi.Family{
+	"l2_vpn_flowspec": {
 		Afi:  gobgpapi.Family_AFI_L2VPN,
 		Safi: gobgpapi.Family_SAFI_FLOW_SPEC_VPN,
 	},
@@ -155,5 +155,4 @@ func (n *RouterNode) GetRibCounters() {
 
 	}
 
-	return
 }

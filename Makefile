@@ -35,9 +35,9 @@ all:
 	@echo "Done!"
 
 linter:
-	@#go get -u golang.org/x/lint/golint
-	@golint ./$(PKG_DIR)/*.go
-	@echo "PASS: golint"
+	@#go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@golangci-lint run
+	@echo "PASS: golangci-lint"
 
 test: linter all
 	@./bin/$(BINARY) -metrics
@@ -75,8 +75,8 @@ dist: all
 
 dep:
 	@echo "Making dependencies check ..."
-	@golint || go get -u golang.org/x/lint/golint
-	@versioned || go get -u github.com/greenpau/versioned/cmd/versioned
+	@golangci-lint || go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.45.2
+	@versioned || go install github.com/greenpau/versioned/cmd/versioned@v1.0.27
 	@echo "$@: complete"
 
 gobgp:

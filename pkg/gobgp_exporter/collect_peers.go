@@ -15,7 +15,7 @@
 package exporter
 
 import (
-	gobgpapi "github.com/osrg/gobgp/api"
+	gobgpapi "github.com/osrg/gobgp/v3/api"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
@@ -81,7 +81,7 @@ func (n *RouterNode) GetPeers() {
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 			routerPeerAsn,
 			prometheus.GaugeValue,
-			float64(peerState.GetPeerAs()),
+			float64(peerState.GetPeerAsn()),
 			peerRouterID,
 		))
 		// Peer Admin State: Up (0), Down (1), PFX_CT (2)
@@ -103,7 +103,7 @@ func (n *RouterNode) GetPeers() {
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 			routerPeerLocalAsn,
 			prometheus.GaugeValue,
-			float64(peerState.GetLocalAs()),
+			float64(peerState.GetLocalAsn()),
 			peerRouterID,
 		))
 
@@ -278,7 +278,7 @@ func (n *RouterNode) GetPeers() {
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 			bgpPeerRemovePrivateAsFlag,
 			prometheus.GaugeValue,
-			float64(peerState.GetRemovePrivateAs()),
+			float64(peerState.GetRemovePrivate()),
 			peerRouterID,
 		))
 		// Whether authentication password is being set (1) or not (0)
@@ -296,10 +296,9 @@ func (n *RouterNode) GetPeers() {
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 			bgpPeerType,
 			prometheus.GaugeValue,
-			float64(peerState.GetPeerType()),
+			float64(peerState.GetType()),
 			peerRouterID,
 		))
 
 	}
-	return
 }
