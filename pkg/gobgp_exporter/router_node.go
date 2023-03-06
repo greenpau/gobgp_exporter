@@ -15,19 +15,22 @@
 package exporter
 
 import (
+	"crypto/tls"
 	"fmt"
-	gobgpapi "github.com/osrg/gobgp/v3/api"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
-	"golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	gobgpapi "github.com/osrg/gobgp/v3/api"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
+	"golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // RouterNode is an instance of a GoBGP router.
@@ -50,7 +53,7 @@ type RouterNode struct {
 }
 
 // NewRouterNode creates an instance of RouterNode.
-func NewRouterNode(addr string, timeout int) (*RouterNode, error) {
+func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config) (*RouterNode, error) {
 	if err := validAddress(addr); err != nil {
 		return nil, err
 	}
@@ -69,7 +72,11 @@ func NewRouterNode(addr string, timeout int) (*RouterNode, error) {
 	n.addressFamilies["EVPN"] = true
 
 	grpcOpts := []grpc.DialOption{grpc.WithBlock()}
-	grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if tlsConfig == nil {
+		grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	} else {
+		grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()

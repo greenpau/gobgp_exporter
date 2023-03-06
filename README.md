@@ -273,6 +273,12 @@ Usage: gobgp-exporter [arguments]
         The minimum interval (in seconds) between collections from a GoBGP server. (default 15)
   -gobgp.timeout int
         Timeout on gRPC requests to a GoBGP server. (default 2)
+  -gobgp.tls
+        Whether to enable TLS for gRPC API access.
+  -gobgp.tls-ca string
+        Optional path to PEM file with CA certificates to be trusted for gRPC API access.
+  -gobgp.tls-server-name string
+        Optional hostname to verify API server as.
   -log.level string
         logging severity level (default "info")
   -metrics
@@ -290,6 +296,9 @@ Documentation: https://github.com/greenpau/gobgp_exporter/
 * __`gobgp.address`:__ Address (host and port) of the GoBGP instance we should
     connect to. This could be a local GoBGP server (`127.0.0.0:50051`, for
     instance), or the address of a remote GoBGP server.
+* __`gobgp.tls`:__ Enable TLS for the GoBGP connection. (default: not set)
+* __`gobgp.tls-ca`:__ Optional path to a PEM file containing certificate authorities to verify GoBGP server certificate against. If empty, the host's root CA set is used instead. (default: empty)
+* __`gobgp.tls-server-name`:__ Optional server name to verify GoBGP server certificate against. If empty, verification will be using the hostname or IP used in `gobgp.address`. (default: empty)
 * __`gobgp.timeout`:__ Timeout on gRPC requests to GoBGP.
 * __`gobgp.poll-interval`:__ The minimum interval (in seconds) between collections from GoBGP server. (default: 15 seconds)
 * __`gobgp.peers`:__ The file containing the mapping between `router_id` and the name (e.g. `hostname`) of a remote peer.
