@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -14,6 +17,79 @@ import (
 	"github.com/prometheus/common/promlog"
 )
 
+func loadCertificatePEM(filePath string) (*x509.Certificate, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	rest := content
+	var block *pem.Block
+	var cert *x509.Certificate
+	for len(rest) > 0 {
+		block, rest = pem.Decode(content)
+		if block == nil {
+			// no PEM data found, rest will not have been modified
+			break
+		}
+		content = rest
+		switch block.Type {
+		case "CERTIFICATE":
+			cert, err = x509.ParseCertificate(block.Bytes)
+			if err != nil {
+				return nil, err
+			}
+			return cert, err
+		default:
+			// not the PEM block we're looking for
+			continue
+		}
+	}
+	return nil, errors.New("no certificate PEM block found")
+}
+
+func loadKeyPEM(filePath string) (crypto.PrivateKey, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	rest := content
+	var block *pem.Block
+	var key crypto.PrivateKey
+	for len(rest) > 0 {
+		block, rest = pem.Decode(content)
+		if block == nil {
+			// no PEM data found, rest will not have been modified
+			break
+		}
+		switch block.Type {
+		case "RSA PRIVATE KEY":
+			key, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+			if err != nil {
+				return nil, err
+			}
+			return key, err
+		case "PRIVATE KEY":
+			key, err = x509.ParsePKCS8PrivateKey(block.Bytes)
+			if err != nil {
+				return nil, err
+			}
+			return key, err
+		case "EC PRIVATE KEY":
+			key, err = x509.ParseECPrivateKey(block.Bytes)
+			if err != nil {
+				return nil, err
+			}
+			return key, err
+		default:
+			// not the PEM block we're looking for
+			continue
+		}
+	}
+	return nil, errors.New("no private key PEM block found")
+}
+
 func main() {
 	var listenAddress string
 	var metricsPath string
@@ -21,6 +97,8 @@ func main() {
 	var serverTLS bool
 	var serverTLSCAPath string
 	var serverTLSServerName string
+	var serverTLSClientCertPath string
+	var serverTLSClientKeyPath string
 	var pollTimeout int
 	var pollInterval int
 	var isShowMetrics bool
@@ -34,6 +112,8 @@ func main() {
 	flag.BoolVar(&serverTLS, "gobgp.tls", false, "Whether to enable TLS for gRPC API access.")
 	flag.StringVar(&serverTLSCAPath, "gobgp.tls-ca", "", "Optional path to PEM file with CA certificates to be trusted for gRPC API access.")
 	flag.StringVar(&serverTLSServerName, "gobgp.tls-server-name", "", "Optional hostname to verify API server as.")
+	flag.StringVar(&serverTLSClientCertPath, "gobgp.tls-client-cert", "", "Optional path to PEM file with client certificate to be used for client authentication.")
+	flag.StringVar(&serverTLSClientKeyPath, "gobgp.tls-client-key", "", "Optional path to PEM file with client key to be used for client authentication.")
 	flag.IntVar(&pollTimeout, "gobgp.timeout", 2, "Timeout on gRPC requests to a GoBGP server.")
 	flag.IntVar(&pollInterval, "gobgp.poll-interval", 15, "The minimum interval (in seconds) between collections from a GoBGP server.")
 	flag.StringVar(&authToken, "auth.token", "anonymous", "The X-Token for accessing the exporter itself")
@@ -87,6 +167,23 @@ func main() {
 		}
 		if len(serverTLSServerName) > 0 {
 			opts.TLS.ServerName = serverTLSServerName
+		}
+		if len(serverTLSClientCertPath) > 0 && len(serverTLSClientKeyPath) > 0 {
+			// again assuming PEM file
+			cert, err := loadCertificatePEM(serverTLSClientCertPath)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to load client certificate: %s", err)
+			}
+			key, err := loadKeyPEM(serverTLSClientKeyPath)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to load client key: %s", err)
+			}
+			opts.TLS.Certificates = []tls.Certificate{
+				{
+					Certificate: [][]byte{cert.Raw},
+					PrivateKey:  key,
+				},
+			}
 		}
 	}
 
