@@ -57,7 +57,7 @@ func main() {
 		opts.TLS = new(tls.Config)
 		if len(serverTLSCAPath) > 0 {
 			// assuming PEM file here
-			pemCerts, err := os.ReadFile(serverTLSCAPath)
+			pemCerts, err := os.ReadFile(filepath.Clean(serverTLSCAPath))
 			if err != nil {
 				log.Errorf("Could not read TLS CA PEM file %q: %s", serverTLSCAPath, err)
 				os.Exit(1)
