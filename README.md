@@ -296,7 +296,7 @@ Documentation: https://github.com/greenpau/gobgp_exporter/
 * __`gobgp.address`:__ Address (host and port) of the GoBGP instance we should
     connect to. This could be a local GoBGP server (`127.0.0.0:50051`, for
     instance), or the address of a remote GoBGP server.
-* __`gobgp.tls`:__ Enable TLS for the GoBGP connection. (default: not set)
+* __`gobgp.tls`:__ Enable TLS for the GoBGP connection. (default: false)
 * __`gobgp.tls-ca`:__ Optional path to a PEM file containing certificate authorities to verify GoBGP server certificate against. If empty, the host's root CA set is used instead. (default: empty)
 * __`gobgp.tls-server-name`:__ Optional server name to verify GoBGP server certificate against. If empty, verification will be using the hostname or IP used in `gobgp.address`. (default: empty)
 * __`gobgp.timeout`:__ Timeout on gRPC requests to GoBGP.
