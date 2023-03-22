@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	exporter "github.com/greenpau/gobgp_exporter/pkg/gobgp_exporter"
 	"github.com/prometheus/common/log"
