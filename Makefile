@@ -90,6 +90,7 @@ dist: all
 dep:
 	@echo "Making dependencies check ..."
 	@versioned || go install github.com/greenpau/versioned/cmd/versioned@v1.0.28
+	@golint || go install golang.org/x/lint/golint@latest
 	@echo "DEBUG: completed $@"
 
 .PHONY: gobgp
