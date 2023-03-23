@@ -15,11 +15,12 @@
 package exporter
 
 import (
+	"io"
+
+	"github.com/go-kit/log/level"
 	gobgpapi "github.com/osrg/gobgp/v3/api"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
-	"io"
 )
 
 // GetPeers collects information about BGP peers.
@@ -27,7 +28,10 @@ func (n *RouterNode) GetPeers() {
 
 	serverResponse, err := n.client.ListPeer(context.Background(), &gobgpapi.ListPeerRequest{})
 	if err != nil {
-		log.Errorf("GoBGP query for peers failed: %s", err)
+		level.Error(n.logger).Log(
+			"msg", "GoBGP query for peers failed",
+			"error", err.Error(),
+		)
 		n.IncrementErrorCounter()
 		return
 	}
@@ -38,7 +42,10 @@ func (n *RouterNode) GetPeers() {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			log.Errorf("GoBGP get neighbor response parsing failed: %s", err)
+			level.Error(n.logger).Log(
+				"msg", "GoBGP get neighbor response parsing failed",
+				"error", err.Error(),
+			)
 			n.IncrementErrorCounter()
 			return
 		}
@@ -46,7 +53,10 @@ func (n *RouterNode) GetPeers() {
 	}
 
 	if err != nil {
-		log.Errorf("GoBGP query for peers failed: %s", err)
+		level.Error(n.logger).Log(
+			"msg", "GoBGP query for peers failed",
+			"error", err.Error(),
+		)
 		n.IncrementErrorCounter()
 		return
 	}

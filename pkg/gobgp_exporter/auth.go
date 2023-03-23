@@ -16,8 +16,9 @@ package exporter
 
 import (
 	"fmt"
-	"github.com/prometheus/common/log"
 	"net/http"
+
+	"github.com/go-kit/log/level"
 )
 
 // AddAuthenticationToken adds an authentication token for accessing
@@ -57,9 +58,15 @@ func (e *Exporter) authorize(r *http.Request) (string, bool) {
 	}
 
 	if invalidToken {
-		log.Warnf("unauthorized access from %q due to invalid token", r.RemoteAddr)
+		level.Warn(e.logger).Log(
+			"reason", "unauthorized access with invalid token",
+			"remote_address", r.RemoteAddr,
+		)
 	} else {
-		log.Warnf("unauthorized access from %q due to the lack of auth token", r.RemoteAddr)
+		level.Warn(e.logger).Log(
+			"reason", "unauthorized access without auth token",
+			"remote_address", r.RemoteAddr,
+		)
 	}
 
 	return "", false

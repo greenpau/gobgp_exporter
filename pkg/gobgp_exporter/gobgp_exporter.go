@@ -20,9 +20,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+
 	"github.com/prometheus/common/version"
 )
 
@@ -48,6 +50,7 @@ type Exporter struct {
 	pollInterval int64
 	Node         *RouterNode
 	Tokens       map[string]bool
+	logger       log.Logger
 }
 
 // Options are the options for the initialization of an instance of the
@@ -56,6 +59,7 @@ type Options struct {
 	Address string
 	TLS     *tls.Config
 	Timeout int
+	Logger  log.Logger
 }
 
 // NewExporter returns an initialized Exporter.
@@ -69,14 +73,18 @@ func NewExporter(opts Options) (*Exporter, error) {
 		timeout: opts.Timeout,
 		address: opts.Address,
 		Tokens:  make(map[string]bool),
+		logger:  opts.Logger,
 	}
 
-	n, err := NewRouterNode(opts.Address, opts.Timeout, opts.TLS)
+	n, err := NewRouterNode(opts.Address, opts.Timeout, opts.TLS, opts.Logger)
 	if err != nil {
 		return nil, err
 	}
 	e.Node = n
-	log.Debugf("NewExporter() initialized successfully")
+	level.Debug(e.logger).Log(
+		"msg", "NewExporter() initialized successfully",
+	)
+
 	return &e, nil
 }
 
@@ -124,12 +132,18 @@ func (e *Exporter) Scrape(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
-	log.Debugf("calls Scrape()")
+	level.Debug(e.logger).Log(
+		"msg", "calls Scrape()",
+	)
+
 	start := time.Now()
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(e.Node)
 	h := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
 	h.ServeHTTP(w, r)
 	duration := time.Since(start).Seconds()
-	log.Debugf("Scrape() took %f seconds", duration)
+	level.Debug(e.logger).Log(
+		"msg", "completed Scrape()",
+		"took", duration,
+	)
 }

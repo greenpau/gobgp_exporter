@@ -9,8 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-kit/log/level"
 	exporter "github.com/greenpau/gobgp_exporter/pkg/gobgp_exporter"
-	"github.com/prometheus/common/log"
+	"github.com/prometheus/common/promlog"
 )
 
 func main() {
@@ -54,31 +55,39 @@ func main() {
 		Timeout: pollTimeout,
 	}
 
+	allowedLogLevel := &promlog.AllowedLevel{}
+	if err := allowedLogLevel.Set(logLevel); err != nil {
+		fmt.Fprintf(os.Stderr, "%s", err.Error())
+		os.Exit(1)
+	}
+
+	promlogConfig := &promlog.Config{
+		Level: allowedLogLevel,
+	}
+
+	logger := promlog.New(promlogConfig)
+	opts.Logger = logger
+
 	if serverTLS {
 		opts.TLS = new(tls.Config)
 		if len(serverTLSCAPath) > 0 {
 			// assuming PEM file here
 			pemCerts, err := os.ReadFile(filepath.Clean(serverTLSCAPath))
 			if err != nil {
-				log.Errorf("Could not read TLS CA PEM file %q: %s", serverTLSCAPath, err)
+				fmt.Fprintf(os.Stderr, "Could not read TLS CA PEM file %q: %s", serverTLSCAPath, err)
 				os.Exit(1)
 			}
 
 			opts.TLS.RootCAs = x509.NewCertPool()
 			ok := opts.TLS.RootCAs.AppendCertsFromPEM(pemCerts)
 			if !ok {
-				log.Errorf("Could not parse any TLS CA certificate from PEM file %q: %s", serverTLSCAPath, err)
+				fmt.Fprintf(os.Stderr, "Could not parse any TLS CA certificate from PEM file %q: %s", serverTLSCAPath, err)
 				os.Exit(1)
 			}
 		}
 		if len(serverTLSServerName) > 0 {
 			opts.TLS.ServerName = serverTLSServerName
 		}
-	}
-
-	if err := log.Base().SetLevel(logLevel); err != nil {
-		log.Errorf(err.Error())
-		os.Exit(1)
 	}
 
 	if isShowVersion {
@@ -97,22 +106,35 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Infof("Starting %s %s", exporter.GetExporterName(), exporter.GetVersionInfo())
-	log.Infof("Build context %s", exporter.GetVersionBuildContext())
+	level.Info(logger).Log(
+		"msg", "Starting exporter",
+		"exporter", exporter.GetExporterName(),
+		"version", exporter.GetVersionInfo(),
+		"build_context", exporter.GetVersionBuildContext(),
+	)
 
 	e, err := exporter.NewExporter(opts)
 	if err != nil {
-		log.Errorf("%s failed to init properly: %s", exporter.GetExporterName(), err)
-		os.Exit(1)
-	}
-	e.SetPollInterval(int64(pollInterval))
-	if err := e.AddAuthenticationToken(authToken); err != nil {
-		log.Errorf("%s failed to add authentication token: %s", exporter.GetExporterName(), err)
+		level.Error(logger).Log(
+			"msg", "failed to init properly",
+			"error", err.Error(),
+		)
 		os.Exit(1)
 	}
 
-	// log.Infof("GoBGP Server: %s", e.ServerAddress)
-	log.Infof("Minimal scrape interval: %d seconds", e.GetPollInterval())
+	e.SetPollInterval(int64(pollInterval))
+	if err := e.AddAuthenticationToken(authToken); err != nil {
+		level.Error(logger).Log(
+			"msg", "failed to add authentication token",
+			"error", err.Error(),
+		)
+		os.Exit(1)
+	}
+
+	level.Info(logger).Log(
+		"msg", "exporter configuration",
+		"min_scrape_interval", e.GetPollInterval(),
+	)
 
 	http.HandleFunc(metricsPath, func(w http.ResponseWriter, r *http.Request) {
 		e.Scrape(w, r)
@@ -122,6 +144,13 @@ func main() {
 		e.Summary(metricsPath, w, r)
 	})
 
-	log.Infoln("Listening on", listenAddress)
-	log.Fatal(http.ListenAndServe(listenAddress, nil))
+	level.Info(logger).Log("listen_on ", listenAddress)
+
+	if err := http.ListenAndServe(listenAddress, nil); err != nil {
+		level.Error(logger).Log(
+			"msg", "listener failed",
+			"error", err.Error(),
+		)
+		os.Exit(1)
+	}
 }

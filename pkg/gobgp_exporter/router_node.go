@@ -24,9 +24,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	gobgpapi "github.com/osrg/gobgp/v3/api"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 	"golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -50,11 +51,12 @@ type RouterNode struct {
 	nextCollectionTicker int64
 	metrics              []prometheus.Metric
 	connected            bool
+	logger               log.Logger
 }
 
 // NewRouterNode creates an instance of RouterNode.
-func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config) (*RouterNode, error) {
-	if err := validAddress(addr); err != nil {
+func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config, logger log.Logger) (*RouterNode, error) {
+	if err := validAddress(addr, logger); err != nil {
 		return nil, err
 	}
 	n := &RouterNode{
@@ -63,6 +65,7 @@ func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config) (*RouterNode
 		nextCollectionTicker: 0,
 		errors:               0,
 		address:              addr,
+		logger:               logger,
 	}
 	n.resourceTypes = make(map[string]bool)
 	n.addressFamilies = make(map[string]bool)
@@ -90,7 +93,7 @@ func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config) (*RouterNode
 	return n, nil
 }
 
-func validAddress(s string) error {
+func validAddress(s string, logger log.Logger) error {
 	if s == "" {
 		return fmt.Errorf("empty address")
 	}
@@ -112,7 +115,12 @@ func validAddress(s string) error {
 		strport = s[idx+1:]
 	}
 
-	log.Debugf("uri: %s, host: %s, port: %s ", s, host, strport)
+	level.Debug(logger).Log(
+		"msg", "validAddress info",
+		"uri", s,
+		"host", host,
+		"port", strport,
+	)
 
 	port, err := strconv.Atoi(strport)
 	if err != nil {
@@ -138,14 +146,22 @@ func (n *RouterNode) IncrementErrorCounter() {
 // Collect implements prometheus.Collector.
 func (n *RouterNode) Collect(ch chan<- prometheus.Metric) {
 	start := time.Now()
-	log.Debugf("Calling GatherMetrics()")
+	level.Debug(n.logger).Log(
+		"msg", "Calling GatherMetrics()",
+	)
 	n.GatherMetrics()
-	log.Debugf("Collect() calls RLock()")
+	level.Debug(n.logger).Log(
+		"msg", "Collect() calls RLock()",
+	)
 	n.RLock()
 	defer n.RUnlock()
-	log.Debugf("Collect() successful RLock()")
+	level.Debug(n.logger).Log(
+		"msg", "Collect() successful RLock()",
+	)
 	if len(n.metrics) == 0 {
-		log.Debugf("Collect() no metrics found")
+		level.Debug(n.logger).Log(
+			"msg", "Collect() no metrics found",
+		)
 		ch <- prometheus.MustNewConstMetric(
 			routerUp,
 			prometheus.GaugeValue,
@@ -168,7 +184,10 @@ func (n *RouterNode) Collect(ch chan<- prometheus.Metric) {
 		)
 		return
 	}
-	log.Debugf("Collect() sends %d metrics to a shared channel", len(n.metrics))
+	level.Debug(n.logger).Log(
+		"msg", "Collect() sends metrics to a shared channel",
+		"metric_count", len(n.metrics),
+	)
 	for _, m := range n.metrics {
 		ch <- m
 	}

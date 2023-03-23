@@ -15,12 +15,13 @@
 package exporter
 
 import (
-	gobgpapi "github.com/osrg/gobgp/v3/api"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
-	"golang.org/x/net/context"
 	"sync"
 	"time"
+
+	"github.com/go-kit/log/level"
+	gobgpapi "github.com/osrg/gobgp/v3/api"
+	"github.com/prometheus/client_golang/prometheus"
+	"golang.org/x/net/context"
 )
 
 // GatherMetrics collect data from a GoBGP router and stores them
@@ -28,14 +29,20 @@ import (
 func (n *RouterNode) GatherMetrics() {
 	n.Lock()
 	defer n.Unlock()
-	log.Debugf("GatherMetrics() locked")
+
+	level.Debug(n.logger).Log(
+		"msg", "GatherMetrics() locked",
+	)
+
 	if time.Now().Unix() < n.nextCollectionTicker {
 		return
 	}
 	start := time.Now()
 	if len(n.metrics) > 0 {
 		n.metrics = n.metrics[:0]
-		log.Debugf("GatherMetrics() cleared metrics")
+		level.Debug(n.logger).Log(
+			"msg", "GatherMetrics() cleared metrics",
+		)
 	}
 	upValue := 1
 
@@ -43,7 +50,10 @@ func (n *RouterNode) GatherMetrics() {
 	server, err := n.client.GetBgp(context.Background(), &gobgpapi.GetBgpRequest{})
 	if err != nil {
 		n.IncrementErrorCounter()
-		log.Errorf("Can't query GoBGP: %v", err)
+		level.Error(n.logger).Log(
+			"msg", "failed query gobgp server",
+			"error", err.Error(),
+		)
 		if IsConnectionError(err) {
 			n.connected = false
 			upValue = 0
@@ -51,7 +61,11 @@ func (n *RouterNode) GatherMetrics() {
 	} else {
 		n.routerID = server.Global.RouterId
 		n.localAS = server.Global.Asn
-		log.Debugf("Router ID: '%s', ASN: %d", n.routerID, n.localAS)
+		level.Debug(n.logger).Log(
+			"msg", "router info",
+			"router_id", n.routerID,
+			"local_asn", n.localAS,
+		)
 		n.connected = true
 	}
 
@@ -119,5 +133,7 @@ func (n *RouterNode) GatherMetrics() {
 	}
 	n.timestamp = time.Now().Format(time.RFC3339)
 
-	log.Debugf("GatherMetrics() returns")
+	level.Debug(n.logger).Log(
+		"msg", "GatherMetrics() returns",
+	)
 }

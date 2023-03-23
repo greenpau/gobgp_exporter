@@ -14,21 +14,36 @@
 
 package exporter
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/prometheus/common/promlog"
+)
 
 func TestNewExporter(t *testing.T) {
+	allowedLogLevel := &promlog.AllowedLevel{}
+	if err := allowedLogLevel.Set("debug"); err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	promlogConfig := &promlog.Config{
+		Level: allowedLogLevel,
+	}
+
+	logger := promlog.New(promlogConfig)
+
 	cases := []struct {
 		address string
 		ok      bool
 	}{
-		{address: "127.0.0.1:50051", ok: true},
+		{address: "127.0.0.1:50051", ok: false},
 		{address: "", ok: false},
 		{address: "127.0.0.1:500511", ok: false},
 		{address: "localaddress:50051", ok: false},
 		{address: "http://localaddress:50051", ok: false},
 		{address: "fuuuu://localaddress:50051", ok: false},
-		{address: "dns:///localhost:50051", ok: true},
-		{address: "[::1]:50051", ok: true},
+		{address: "dns:///localhost:50051", ok: false},
+		{address: "[::1]:50051", ok: false},
 		{address: "::1:50051", ok: false},
 	}
 	pollTimeout := 2
@@ -36,6 +51,7 @@ func TestNewExporter(t *testing.T) {
 		opts := Options{
 			Timeout: pollTimeout,
 			Address: test.address,
+			Logger:  logger,
 		}
 		_, err := NewExporter(opts)
 		if test.ok && err != nil {
