@@ -15,13 +15,15 @@
 package exporter
 
 import (
+	"crypto/tls"
+	"net/http"
+	"sync"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/prometheus/common/version"
-	"net/http"
-	"sync"
-	"time"
 )
 
 const (
@@ -52,6 +54,7 @@ type Exporter struct {
 // Exporter.
 type Options struct {
 	Address string
+	TLS     *tls.Config
 	Timeout int
 }
 
@@ -68,7 +71,7 @@ func NewExporter(opts Options) (*Exporter, error) {
 		Tokens:  make(map[string]bool),
 	}
 
-	n, err := NewRouterNode(opts.Address, opts.Timeout)
+	n, err := NewRouterNode(opts.Address, opts.Timeout, opts.TLS)
 	if err != nil {
 		return nil, err
 	}

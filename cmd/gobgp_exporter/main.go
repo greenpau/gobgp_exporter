@@ -1,18 +1,25 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
-	exporter "github.com/greenpau/gobgp_exporter/pkg/gobgp_exporter"
-	"github.com/prometheus/common/log"
 	"net/http"
 	"os"
+	"path/filepath"
+
+	exporter "github.com/greenpau/gobgp_exporter/pkg/gobgp_exporter"
+	"github.com/prometheus/common/log"
 )
 
 func main() {
 	var listenAddress string
 	var metricsPath string
 	var serverAddress string
+	var serverTLS bool
+	var serverTLSCAPath string
+	var serverTLSServerName string
 	var pollTimeout int
 	var pollInterval int
 	var isShowMetrics bool
@@ -23,6 +30,9 @@ func main() {
 	flag.StringVar(&listenAddress, "web.listen-address", ":9474", "Address to listen on for web interface and telemetry.")
 	flag.StringVar(&metricsPath, "web.telemetry-path", "/metrics", "Path under which to expose metrics.")
 	flag.StringVar(&serverAddress, "gobgp.address", "127.0.0.1:50051", "gRPC API address of GoBGP server.")
+	flag.BoolVar(&serverTLS, "gobgp.tls", false, "Whether to enable TLS for gRPC API access.")
+	flag.StringVar(&serverTLSCAPath, "gobgp.tls-ca", "", "Optional path to PEM file with CA certificates to be trusted for gRPC API access.")
+	flag.StringVar(&serverTLSServerName, "gobgp.tls-server-name", "", "Optional hostname to verify API server as.")
 	flag.IntVar(&pollTimeout, "gobgp.timeout", 2, "Timeout on gRPC requests to a GoBGP server.")
 	flag.IntVar(&pollInterval, "gobgp.poll-interval", 15, "The minimum interval (in seconds) between collections from a GoBGP server.")
 	flag.StringVar(&authToken, "auth.token", "anonymous", "The X-Token for accessing the exporter itself")
@@ -30,7 +40,7 @@ func main() {
 	flag.BoolVar(&isShowVersion, "version", false, "version information")
 	flag.StringVar(&logLevel, "log.level", "info", "logging severity level")
 
-	var usageHelp = func() {
+	usageHelp := func() {
 		fmt.Fprintf(os.Stderr, "\n%s - Prometheus Exporter for GoBGP\n\n", exporter.GetExporterName())
 		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", exporter.GetExporterName())
 		flag.PrintDefaults()
@@ -42,6 +52,28 @@ func main() {
 	opts := exporter.Options{
 		Address: serverAddress,
 		Timeout: pollTimeout,
+	}
+
+	if serverTLS {
+		opts.TLS = new(tls.Config)
+		if len(serverTLSCAPath) > 0 {
+			// assuming PEM file here
+			pemCerts, err := os.ReadFile(filepath.Clean(serverTLSCAPath))
+			if err != nil {
+				log.Errorf("Could not read TLS CA PEM file %q: %s", serverTLSCAPath, err)
+				os.Exit(1)
+			}
+
+			opts.TLS.RootCAs = x509.NewCertPool()
+			ok := opts.TLS.RootCAs.AppendCertsFromPEM(pemCerts)
+			if !ok {
+				log.Errorf("Could not parse any TLS CA certificate from PEM file %q: %s", serverTLSCAPath, err)
+				os.Exit(1)
+			}
+		}
+		if len(serverTLSServerName) > 0 {
+			opts.TLS.ServerName = serverTLSServerName
+		}
 	}
 
 	if err := log.Base().SetLevel(logLevel); err != nil {
