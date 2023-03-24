@@ -137,7 +137,7 @@ func main() {
 
 	allowedLogLevel := &promlog.AllowedLevel{}
 	if err := allowedLogLevel.Set(logLevel); err != nil {
-		fmt.Fprintf(os.Stderr, "%s", err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -154,14 +154,14 @@ func main() {
 			// assuming PEM file here
 			pemCerts, err := os.ReadFile(filepath.Clean(serverTLSCAPath))
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Could not read TLS CA PEM file %q: %s", serverTLSCAPath, err)
+				fmt.Fprintf(os.Stderr, "Could not read TLS CA PEM file %q: %s\n", serverTLSCAPath, err)
 				os.Exit(1)
 			}
 
 			opts.TLS.RootCAs = x509.NewCertPool()
 			ok := opts.TLS.RootCAs.AppendCertsFromPEM(pemCerts)
 			if !ok {
-				fmt.Fprintf(os.Stderr, "Could not parse any TLS CA certificate from PEM file %q: %s", serverTLSCAPath, err)
+				fmt.Fprintf(os.Stderr, "Could not parse any TLS CA certificate from PEM file %q: %s\n", serverTLSCAPath, err)
 				os.Exit(1)
 			}
 		}
@@ -172,11 +172,11 @@ func main() {
 			// again assuming PEM file
 			cert, err := loadCertificatePEM(serverTLSClientCertPath)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "failed to load client certificate: %s", err)
+				fmt.Fprintf(os.Stderr, "Failed to load client certificate: %s\n", err)
 			}
 			key, err := loadKeyPEM(serverTLSClientKeyPath)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "failed to load client key: %s", err)
+				fmt.Fprintf(os.Stderr, "Failed to load client key: %s\n", err)
 			}
 			opts.TLS.Certificates = []tls.Certificate{
 				{
