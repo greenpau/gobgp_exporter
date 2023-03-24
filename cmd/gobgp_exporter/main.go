@@ -184,6 +184,9 @@ func main() {
 					PrivateKey:  key,
 				},
 			}
+		} else if len(serverTLSClientCertPath) > 0 || len(serverTLSClientKeyPath) > 0 {
+			fmt.Fprintln(os.Stderr, "Only one of client certificate and key was set, must set both.")
+			os.Exit(1)
 		}
 	}
 
