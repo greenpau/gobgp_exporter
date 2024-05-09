@@ -18,6 +18,8 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
+	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -98,21 +100,24 @@ func validAddress(s string, logger log.Logger) error {
 		return fmt.Errorf("empty address")
 	}
 
-	host, strport, err := net.SplitHostPort(s)
+	uri_schema_check := regexp.MustCompile(`(.+://).*`)
+	endpoint := s
+
+	if uri_schema_check.MatchString(s) {
+		uri, err := url.Parse(s)
+		if err != nil {
+			return err
+		} else if !(uri.Scheme == "http" || uri.Scheme == "https" || uri.Scheme == "dns") {
+            // those are all valid addresses, as grpc works on top of http2
+			return fmt.Errorf("invalid scheme for grpc in %s", s)
+		}
+		endpoint = uri.Host
+	}
+	host, strport, err := net.SplitHostPort(endpoint)
 	if err != nil {
 		return err
-	} else if host != "" {
-		if addr := net.ParseIP(host); addr == nil {
-			return fmt.Errorf("invalid IP address in %s", s)
-		}
-	} else if !strings.HasPrefix(s, "dns://") {
-		return fmt.Errorf("invalid address format in %s", s)
-	} else {
-		// "dns://" prefix for hostname is allowed per go grpc documentation
-		// see https://pkg.go.dev/google.golang.org/grpc#DialContext
-		idx := strings.LastIndex(s, ":")
-		host = s[0:idx]
-		strport = s[idx+1:]
+	} else if host == "" {
+		return fmt.Errorf("invalid endpoint format, hostname endpoint can't be empty %s", s)
 	}
 
 	level.Debug(logger).Log(
