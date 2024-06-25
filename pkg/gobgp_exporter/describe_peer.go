@@ -24,6 +24,11 @@ var (
 		"Is the peer up and in established state (1) or it is not (0).",
 		[]string{"name"}, nil,
 	)
+	routerPeerUptime = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "peer", "uptime_seconds"),
+		"For how long the peer has been in its current state.",
+		[]string{"name"}, nil,
+	)
 	routerPeerAsn = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "peer", "asn"),
 		"What is the AS number of the peer",

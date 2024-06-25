@@ -70,6 +70,7 @@ func (n *RouterNode) GetPeers() {
 	for _, p := range peers {
 		peerState := p.GetState()
 		peerRouterID := peerState.GetNeighborAddress()
+		peerTimers := p.GetTimers()
 
 		// Peer Up/Down
 		if peerState.GetRouterId() != "" {
@@ -87,6 +88,13 @@ func (n *RouterNode) GetPeers() {
 				peerRouterID,
 			))
 		}
+		// Peer uptime
+		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
+			routerPeerUptime,
+			prometheus.GaugeValue,
+			float64(peerTimers.GetState().GetUptime().GetSeconds()),
+			peerRouterID,
+		))
 		// Peer ASN
 		n.metrics = append(n.metrics, prometheus.MustNewConstMetric(
 			routerPeerAsn,

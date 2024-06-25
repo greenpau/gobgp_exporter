@@ -32,6 +32,7 @@ func (n *RouterNode) Describe(ch chan<- *prometheus.Desc) {
 	ch <- routerRibAcceptedPathCount
 	ch <- routerPeers
 	ch <- routerPeer
+	ch <- routerPeerUptime
 	ch <- routerPeerAsn
 	ch <- routerPeerLocalAsn
 	ch <- routerPeerAdminState
