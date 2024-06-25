@@ -81,6 +81,14 @@ func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config, logger log.L
 		grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	}
 
+	if strings.HasPrefix(addr, "unix://") {
+		addr = addr[len("unix://"):]
+		dialer := func(ctx context.Context, addr string) (net.Conn, error) {
+			return net.Dial("unix", addr)
+		}
+		grpcOpts = append(grpcOpts, grpc.WithContextDialer(dialer))
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, addr, grpcOpts...)
@@ -96,6 +104,14 @@ func NewRouterNode(addr string, timeout int, tlsConfig *tls.Config, logger log.L
 func validAddress(s string, logger log.Logger) error {
 	if s == "" {
 		return fmt.Errorf("empty address")
+	}
+
+	// With a custom context dialer, gRPC can be used through unix domain sockets. GoBGP supports
+	// it, and can be useful for netns deployments.
+	// We'll have to handle it later though, when creating the dialer.
+	if strings.HasPrefix(s, "unix://") {
+		level.Debug(logger).Log("msg", "validAddress info", "uri", s, "unix", true)
+		return nil
 	}
 
 	host, strport, err := net.SplitHostPort(s)
